@@ -32,7 +32,7 @@ dp = Var(
     def_lat=True,
     def_lon=True,
     in_nc_grid=False,
- )
+)
 ps = Var(
     name='ps',
     units='Pa',
@@ -231,7 +231,7 @@ class Calc(object):
         for d in self.dtype_out_time:
             clc, isin = get_or_create(session, dbCalc, defaults=None,
                                       name=self.name,
-                                      filepath=self.file_name[d],
+                                      filepath=self.path_scratch[d],
                                       var=vr,
                                       run=rn,
                                       intvl_in=self.intvl_in,
