@@ -132,14 +132,15 @@ class Calc(Base):
     pressure_type = Column(String)
 
     def __repr__(self):
-        r = ('<aospy.Calc(name: %s)>\n'
+        r = ('<aospy.Calc(var: %s)>\n'
              'Attributes:\n'
              '  * filepath:\t\t%s\n'
              '  * description:\t%s\n'
              '  * intvl_in:\t\t%s\n'
              '  * intvl_out:\t\t%s\n'
+             '  * dtype_out_time:\t\t%s\n'
              % (self.name, self.filepath, self.description,
-                self.intvl_in, self.intvl_out))
+                self.intvl_in, self.intvl_out, self.dtype_out_time))
         return r
 
 
