@@ -8,7 +8,7 @@ engine = create_engine('sqlite:///test.db')
 Base = declarative_base()
 
 
-def create_session():
+def create_session(path='sqlite///test.db'):
     """Generates a session to interface with the database
 
     Parameters
@@ -21,7 +21,7 @@ def create_session():
     session : sqlalchemy session
         current session
     """
-    engine = create_engine('sqlite:///test.db')
+    engine = create_engine(path)
     Session = sessionmaker(bind=engine)
     return Session()
 
