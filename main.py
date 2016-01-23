@@ -4,20 +4,10 @@ import itertools
 
 import colorama
 
-from aospy_synthetic.var import Var
-from aospy_synthetic.proj import Proj
-from aospy_synthetic.model import Model
 from aospy_synthetic.run import Run
 from aospy_synthetic.calc import Calc, CalcInterface
-import aospy_synthetic.io as io
-import aospy_synthetic.utils as utils
 
-# import aospy_synthetic
-# import aospy_user
-
-import units
 import calcs
-import variables
 from cases import *
 from idealized import *
 from models import *
@@ -189,10 +179,6 @@ def main(main_params):
     param_combos = cs.create_params_all_calcs()
     calcs = cs.create_calcs(param_combos, exec_calcs=True, print_table=True)
     print('\n\tVariable time averages and statistics:')
-    # if main_params.compute:
-        # cs.exec_calcs(calcs)
-    # if main_params.print_table:
-        # cs.print_results(calcs)
     print("Calculations finished.")
     return calcs
 
@@ -200,49 +186,21 @@ if __name__ == '__main__':
 
     mp = MainParams()
     mp.proj = 'example'
-#    mp.proj = 'dargan_test'
     mp.model = ['am2']
-#    mp.model = ['am2_reyoi']
-#    mp.model = ['dargan']
-    mp.run = [('am2_control','am2_tropics', 'am2_extratropics','am2_tropics+extratropics')]
-#    mp.run = [('am2_HadISST_control', 'am2_reyoi_extratropics_sp_SI', 'am2_reyoi_tropics_sp_SI')]
-#    mp.run = ['control_T85']
-#    mp.run = ['control_alb_T42']
+    mp.run = [('am2_control', 'am2_tropics',
+               'am2_extratropics', 'am2_tropics+extratropics')]
     mp.ens_mem = [False]
-#    mp.var = ['Q_diff']
-#    mp.var = ['mse']
-#    mp.var = ['msf']
-#    mp.var = ['mse']
-#    mp.var = ['precip', 't_surf', 'Q_diff', 'ucomp', 'vcomp', 'mse']
-#    mp.var = ['dp_sigma', 'ucomp', 'vcomp', 'mse']
-#    mp.var = ['net_sw']
-    mp.var = ['tdt_sw', 'tdt_lw', 'tdt_vdif', 'qdt_vdif']#, 'vcomp_mb', 'mse']
-#    mp.var = ['olr']
-#    mp.var = ['dp_sigma']
-#    mp.var = ['olr','t_surf','swdn_toa','lwdn_sfc','swdn_sfc','lwup_sfc','evap','precip',
-#              'swup_toa','swup_toa_clr','swdn_sfc_clr','lwup_sfc_clr','lwdn_sfc_clr',
-#              ]#, 'mse_vert_advec_upwind']
-    #mp.date_range = [('1983-01-01', '2012-12-31')]
+    mp.var = ['gz', 'dse', 'mse']
     mp.date_range = [('0021-01-01', '0080-12-31')]
-#    mp.date_range = [('1983-01-01', '1998-12-31')]
-#    mp.date_range = [('0001-12-27', '0002-12-22')]
     mp.region = []
-#    mp.region = ['sahel', 'nh', 'sh', 'nh_tropics', 'sh_tropics',
-#                 'nh_extratropics', 'sh_extratropics']
     mp.intvl_in = ['monthly']
-#    mp.intvl_in = ['20-day']
-#    mp.intvl_in = ['20-day']
-    mp.intvl_out = ['ann', 'jas', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] # 'jas', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    mp.intvl_out = ['ann', 'jas', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     mp.dtype_in_time = ['ts']
     mp.dtype_in_vert = [False]
-#    mp.dtype_in_vert = ['pressure']
     mp.dtype_in_vert = ['sigma']
-    # mp.dtype_out_time = [('reg.av',)]
-    mp.dtype_out_time = [('av')]# 'ts', 'reg.av', 'reg.ts')]# 'reg.av', 'reg.ts')]
-#    mp.dtype_out_time = [('av', 'reg.av', 'reg.ts')]
-#    mp.dtype_out_time = [('av','reg.std','reg.av','reg.ts')]
+    mp.dtype_out_time = [('av', 'ts')]
     mp.dtype_out_vert = ['vert_int']
-#    mp.dtype_out_vert = [False]
+
     mp.level = [False]
     mp.chunk_len = [False]
     mp.verbose = [True]
@@ -250,10 +208,3 @@ if __name__ == '__main__':
     mp.print_table = False
 
     calcs = main(mp)
-
-    # Unusual dates seem to work -- test
-    # mp.intvl_out = [12]
-    # mp.dtype_out_time = [('ts')]
-    # This returns three points for Dec; this is expected
-    # the number of days is at the end of the averaging period in the
-    # idealized model.
