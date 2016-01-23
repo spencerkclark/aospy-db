@@ -162,10 +162,4 @@ Var.calculations = relationship("Calc",
 Base.metadata.create_all(engine)
 
 if __name__ == '__main__':
-    engine = create_engine('sqlite:///test.db', echo=True)
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    p = Proj(name='test', description='Lets go man', direc_out='stop')
-    p.models = [Model(name='am2')]
-    session.add(p)
-    session.commit()
+    pass
