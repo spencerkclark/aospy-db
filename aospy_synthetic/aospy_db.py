@@ -8,7 +8,7 @@ engine = create_engine('sqlite:///test.db')
 Base = declarative_base()
 
 
-def create_session(path='sqlite///test.db'):
+def create_session(path='sqlite:///test.db'):
     """Generates a session to interface with the database
 
     Parameters
