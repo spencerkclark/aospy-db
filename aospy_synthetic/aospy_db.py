@@ -1,5 +1,5 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy import create_engine, ForeignKey
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.sql import ClauseElement
@@ -128,7 +128,8 @@ class Calc(Base):
     intvl_out = Column(String)
     dtype_out_time = Column(String)
     units = Column(String)
-    date_range = Column(String)
+    start_date = Column(DateTime)
+    end_date = Column(DateTime)
     pressure_type = Column(String)
 
     def __repr__(self):

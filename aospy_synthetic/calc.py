@@ -237,6 +237,8 @@ class Calc(object):
                                       intvl_in=self.intvl_in,
                                       intvl_out=self.intvl_out,
                                       dtype_out_time=d,
+                                      start_date=self.start_date,
+                                      end_date=self.end_date,
                                       pressure_type=str(self.level))
         session.commit()
         session.close()
