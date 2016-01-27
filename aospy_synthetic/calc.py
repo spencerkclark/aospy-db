@@ -1,22 +1,12 @@
 """calc.py: classes for performing specified calculations on aospy data"""
 from __future__ import print_function
 import os
-import shutil
-import subprocess
 import time
-import warnings
-
-import numpy as np
-import xray
 
 from .var import Var
-from .__config__ import (LAT_STR, LON_STR, LAT_BOUNDS_STR, LON_BOUNDS_STR,
-                         PHALF_STR, PFULL_STR, PLEVEL_STR, TIME_STR, YEAR_STR)
-from .io import (_data_in_label, _data_out_label, _ens_label, _yr_label, dmget,
-                 data_in_name_gfdl)
-from .timedate import TimeManager, _get_time
-from .utils import (get_parent_attr, apply_time_offset, monthly_mean_ts,
-                    monthly_mean_at_each_ind)
+from .io import _data_in_label, _data_out_label, _ens_label, _yr_label
+from .timedate import TimeManager
+from .utils import get_parent_attr
 from aospy_db import create_session, get_or_create
 from aospy_db import Calc as dbCalc
 from aospy_db import Var as dbVar
