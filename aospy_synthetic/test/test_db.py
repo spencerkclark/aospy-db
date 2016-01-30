@@ -3,10 +3,7 @@
 import unittest
 from subprocess import call
 
-import cases
-import models
-import example_projects
-import variables
+from test_objs import cases, models, example_projects, variables
 from aospy_synthetic.calc import Calc, CalcInterface
 
 
