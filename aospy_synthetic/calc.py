@@ -7,9 +7,9 @@ from .var import Var
 from .io import _data_in_label, _data_out_label, _ens_label, _yr_label
 from .timedate import TimeManager
 from .utils import get_parent_attr
-from aospy_db import create_session, get_or_create
-from aospy_db import Calc as dbCalc
-from aospy_db import Var as dbVar
+#from aospy_db import create_session, get_or_create
+#from aospy_db import Calc as dbCalc
+#from aospy_db import Var as dbVar
 
 
 dp = Var(
@@ -127,13 +127,6 @@ class CalcInterface(object):
         self.start_date_xray = tm.apply_year_offset(self.start_date)
         self.end_date_xray = tm.apply_year_offset(self.end_date)
 
-        # Add row to database.
-        session = create_session()
-        db_entry_var, isin = get_or_create(session, dbVar, defaults=None,
-                                           name=self.name)
-        session.commit()
-        session.close()
-
 
 class Calc(object):
     """Class for executing, saving, and loading a single computation."""
@@ -212,26 +205,6 @@ class Calc(object):
         self.path_archive = self._path_archive()
 
         self.data_out = {}
-
-        # Add rows to database.
-        session = create_session()
-        rn = self.run[0].get_db_entry(session)
-        vr, isin = get_or_create(session, dbVar, defaults=None,
-                                 name=self.name)
-        for d in self.dtype_out_time:
-            clc, isin = get_or_create(session, dbCalc, defaults=None,
-                                      name=self.name,
-                                      filepath=self.path_scratch[d],
-                                      var=vr,
-                                      run=rn,
-                                      intvl_in=self.intvl_in,
-                                      intvl_out=self.intvl_out,
-                                      dtype_out_time=d,
-                                      start_date=self.start_date,
-                                      end_date=self.end_date,
-                                      pressure_type=str(self.level))
-        session.commit()
-        session.close()
 
     def compute(self):
         """Perform all desired calculations on the data and save externally."""

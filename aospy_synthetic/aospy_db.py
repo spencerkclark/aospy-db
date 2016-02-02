@@ -59,7 +59,22 @@ def get_or_create(session, obj, defaults=None, **kwargs):
         return instance, True
 
 
-class Proj(Base):
+class AospyDBEntry(Base):
+    """A generic aospy object that enters the database."""
+
+    def __init__(self, AospyObj):
+        """Instantiates a database object from an aospy object based on the
+        object's overlapping attributes with the database columns.
+
+        Essentially, if we track the attributes in the database, they will
+        enter the database automatically.
+        """
+        for attr in AospyObj.attrs:
+            if hasattr(type(self), attr):
+                setattr(self, attr, getattr(AospyObj, attr))
+
+
+class Proj(AospyDBEntry):
     """A table containing pointers to aospy Proj objects."""
     __tablename__ = 'projects'
     id = Column(Integer, primary_key=True)
@@ -71,7 +86,7 @@ class Proj(Base):
         return "<Proj(name='%s')>" % self.name
 
 
-class Model(Base):
+class Model(AospyDBEntry):
     """A table containing pointers to Model objects."""
     __tablename__ = 'models'
     id = Column(Integer, primary_key=True)
@@ -83,7 +98,7 @@ class Model(Base):
         return "<Model(name='%s')>" % self.name
 
 
-class Run(Base):
+class Run(AospyDBEntry):
     """A table containing pointers to Run objects."""
     __tablename__ = 'runs'
     id = Column(Integer, primary_key=True)
@@ -97,11 +112,12 @@ class Run(Base):
     data_in_direc = Column(String)
 
     def __repr__(self):
-        return "<Run(name='%s', description='%s')>" % (self.name,
-                                                       self.description)
+        return "<Run(name='%s', description='%s', model=%d)>" % (self.name,
+                                                                 self.description,
+                                                                 self.model_id)
 
 
-class Var(Base):
+class Var(AospyDBEntry):
     """A table containing pointers to Var objects."""
     __tablename__ = 'variables'
     id = Column(Integer, primary_key=True)
@@ -113,7 +129,7 @@ class Var(Base):
                                                        self.description)
 
 
-class Calc(Base):
+class Calc(AospyDBEntry):
     """A table containing pointers to Var objects."""
     __tablename__ = 'calculations'
     id = Column(Integer, primary_key=True)

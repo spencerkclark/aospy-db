@@ -1,6 +1,7 @@
 from aospy_synthetic.proj import Proj
 import variables
 import models
+from aospy_synthetic.SQLAlchemyDB import SQLBackend
 
 example = Proj(
     'example',
@@ -8,8 +9,6 @@ example = Proj(
     direc_out='/archive/skc/example/',
     models=(
         models.am2,
-        models.am2_reyoi,
-        models.dargan_T42,
-        models.dargan
-    )
+    ),
+    backend=SQLBackend('path')
 )

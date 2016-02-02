@@ -15,7 +15,8 @@ class AospySyntheticTestCase(unittest.TestCase):
         self.variable = variables.mse
 
     def tearDown(self):
-        call(['rm', 'test.db'])
+#        call(['rm', 'test.db'])
+        pass
 
 
 class TestDB(AospySyntheticTestCase):
