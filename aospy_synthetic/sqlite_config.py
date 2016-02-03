@@ -3,6 +3,12 @@ from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy import create_engine, ForeignKey
 from sqlalchemy.orm import relationship
 
+from aospy.proj import Proj
+from aospy.model import Model
+from aospy.run import Run
+from aospy.var import Var
+from aospy.calc import Calc
+
 DB_PATH = 'sqlite:///test.db'
 engine = create_engine(DB_PATH)
 Base = declarative_base()

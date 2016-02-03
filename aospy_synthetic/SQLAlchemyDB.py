@@ -89,7 +89,7 @@ class SQLBackend(AbstractBackend):
         if instance:
             return instance
         else:
-            instance = DBObj(AospyObj)
+            instance = DBObj(AospyObj, **kwargs)
             session.add(instance)
             return instance
 
@@ -97,4 +97,5 @@ class SQLBackend(AbstractBackend):
         return dict((attr, value) for attr, value in
                     AospyObj.__dict__.iteritems()
                     if (hasattr(DBObj, attr) and
-                        (attr not in ['runs', 'models', 'projects', 'calcs'])))
+                        (attr not in ['projects', 'models',
+                                      'runs', 'calculations', 'variables'])))
