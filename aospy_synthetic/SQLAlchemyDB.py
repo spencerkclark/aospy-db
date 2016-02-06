@@ -41,13 +41,14 @@ class SQLBackend(AbstractBackend):
         Session = sessionmaker(bind=engine)
         session = Session()
         if isinstance(AospyObj, Proj):
-            ModelDBs = [self._query(session, AospyObj.models[m])
+            ModelDBs = [self._get_or_create(session, ModelDB,
+                                            AospyObj.models[m])
                         for m in AospyObj.models] # I think you should use the flag to track in db here.
             # Something along the lines of if AospyObj.models[m].track then add to the list.
             DBObj = self._get_or_create(session, ProjDB, AospyObj, **kwargs)
             DBObj.models = ModelDBs
         elif isinstance(AospyObj, Model):
-            RunDBs = [self._query(session, AospyObj.runs[r])
+            RunDBs = [self._get_or_create(session, RunDB, AospyObj.runs[r])
                       for r in AospyObj.runs]
             DBObj = self._get_or_create(session, ModelDB, AospyObj, **kwargs)
             DBObj.runs = RunDBs
@@ -67,31 +68,45 @@ class SQLBackend(AbstractBackend):
     def query(self):
         pass
 
-    def _query(self, session, AospyObj):
-        if isinstance(AospyObj, Proj):
-            params = self._query_params(AospyObj, ProjDB)
-            return self._get_or_create(session, ProjDB, AospyObj, **params)
-        elif isinstance(AospyObj, Model):
-            params = self._query_params(AospyObj, ModelDB)
-            return self._get_or_create(session, ModelDB, AospyObj, **params)
-        elif isinstance(AospyObj, Run):
-            params = self._query_params(AospyObj, RunDB)
-            return self._get_or_create(session, RunDB, AospyObj, **params)
-        elif isinstance(AospyObj, Var):
-            params = self._query_params(AospyObj, VarDB)
-            return self._get_or_create(session, VarDB, AospyObj, **params)
-        else:
-            params = self._query_params(AospyObj, CalcDB)
-            return self._get_or_create(session, CalcDB, AospyObj, **params)
-
     def _get_or_create(self, session, DBObj, AospyObj, **kwargs):
-        instance = session.query(DBObj).filter_by(**kwargs).first()
+        """Returns the existing or new instance of an aospy DB object.
+
+        Parameters
+        ----------
+        session : session
+            Active SQLAlchemy database session
+        DBObj : AospyDBEntry
+            AospyDBEntry object to construct
+        AospyObj : Proj, Model, Run, Var, or Calc
+            Aospy object to find or store in database
+        **kwargs
+            Additional attributes to set within the database object for this
+            particular aospy object (meant for setting attributes that are
+            defined in the DB, but NOT in the AospyObj).
+
+        Returns
+        -------
+        DBObj : AospyDBEntry
+            The AospyDBEntry associated with the provided AospyObj
+        """
+        # Query for the existing object via overlapping parameters
+        # and kwargs
+        params = self._query_params(AospyObj, DBObj)
+        filter_params = self._merge_two_dicts(params, kwargs)
+        instance = session.query(DBObj).filter_by(**filter_params).first()
         if instance:
             return instance
         else:
             instance = DBObj(AospyObj, **kwargs)
             session.add(instance)
             return instance
+
+    @staticmethod
+    def _merge_two_dicts(x, y):
+        """From SO 38987"""
+        z = x.copy()
+        z.update(y)
+        return z
 
     def _query_params(self, AospyObj, DBObj):
         return dict((attr, value) for attr, value in

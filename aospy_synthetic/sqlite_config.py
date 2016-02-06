@@ -3,12 +3,6 @@ from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy import create_engine, ForeignKey
 from sqlalchemy.orm import relationship
 
-from aospy.proj import Proj
-from aospy.model import Model
-from aospy.run import Run
-from aospy.var import Var
-from aospy.calc import Calc
-
 DB_PATH = 'sqlite:///test.db'
 engine = create_engine(DB_PATH)
 Base = declarative_base()
@@ -24,7 +18,6 @@ class AospyDBEntry(object):
         Essentially, if we track the attributes in the database, they will
         enter the database automatically.
         """
-        print AospyObj
         for attr, value in AospyObj.__dict__.iteritems():
             if hasattr(type(self), attr) and (attr not in ['runs',
                                                            'models',
@@ -34,6 +27,10 @@ class AospyDBEntry(object):
         for attr in kwargs:
             if hasattr(type(self), attr):
                 setattr(self, attr, kwargs[attr])
+
+    def to_aospy_obj(self, EmptyAospyObj, **kwargs):
+        """Converts a DB object to an aospy object."""
+        pass
 
 
 class ProjDB(AospyDBEntry, Base):
