@@ -96,12 +96,12 @@ class CalcDB(AospyDBEntry, Base):
     description = Column(String)
     filepath = Column(String)
     var_id = Column(Integer, ForeignKey('variables.id'))
-    var = relationship("VarDB", back_populates="calculations")
+    db_var = relationship("VarDB", back_populates="calculations")
     run_id = Column(Integer, ForeignKey('runs.id'))
-    run = relationship("RunDB", back_populates="calculations")
+    db_run = relationship("RunDB", back_populates="calculations")
     intvl_in = Column(String)
     intvl_out = Column(String)
-    dtype_out_time = Column(String)
+    db_dtype_out_time = Column(String)
     units = Column(String)
     start_date = Column(DateTime)
     end_date = Column(DateTime)
@@ -128,10 +128,10 @@ ModelDB.runs = relationship("RunDB",
                             back_populates="model")
 RunDB.calculations = relationship("CalcDB",
                                   order_by=CalcDB.id,
-                                  back_populates="run")
+                                  back_populates="db_run")
 VarDB.calculations = relationship("CalcDB",
                                   order_by=CalcDB.id,
-                                  back_populates="var")
+                                  back_populates="db_var")
 
 
 Base.metadata.create_all(engine)

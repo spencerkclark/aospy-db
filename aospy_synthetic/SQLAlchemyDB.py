@@ -57,7 +57,11 @@ class SQLBackend(AbstractBackend):
         elif isinstance(AospyObj, Var):
             DBObj = self._get_or_create(session, VarDB, AospyObj, **kwargs)
         else:
+            rn = self._get_or_create(session, RunDB, AospyObj.run[0])
+            vr = self._get_or_create(session, VarDB, AospyObj.var)
             DBObj = self._get_or_create(session, CalcDB, AospyObj, **kwargs)
+            DBObj.db_run = rn
+            DBObj.db_var = vr
         session.commit()
         session.close()
         return DBObj
