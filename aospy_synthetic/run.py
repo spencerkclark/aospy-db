@@ -1,10 +1,6 @@
 """`Run` class; for storing attributes of a model run or obs product."""
 
 from .timedate import TimeManager
-#from aospy_db import create_session, get_or_create
-#from aospy_db import Run as dbRun
-#from aospy_db import Calc as dbCalc
-#from aospy_db import Var as dbVar
 from sqlalchemy.sql import ClauseElement
 
 
@@ -25,9 +21,10 @@ class Run(object):
                  data_in_suffix=False, data_in_files={},
                  default_date_range=False, ens_mem_prefix=False,
                  ens_mem_ext=False, ens_mem_suffix=False, tags=(),
-                 idealized=False, backend=None):
+                 idealized=False, backend=None, db_on=True):
         """Instantiate a `Run` object."""
         self.backend = backend
+        self.db_on = db_on
         self.name = name
         self.description = description
         self.proj = proj
@@ -52,8 +49,6 @@ class Run(object):
         self.ens_mem_suffix = ens_mem_suffix
         self.data_in_direc = self._set_direc(data_in_direc, ens_mem_prefix,
                                              ens_mem_ext, ens_mem_suffix)
-
-#        self.db_obj = self.backend.add(self)
 
     def __str__(self):
         return 'Run instance "%s"' % self.name

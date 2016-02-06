@@ -1,16 +1,16 @@
 """proj.py: aospy.Proj class for organizing work in single project."""
 import time
 
-#from aospy_db import create_session, get_or_create
-#from aospy_db import Proj as dbProj
 from .utils import dict_name_keys
 
 
 class Proj(object):
     """Project parameters: models, regions, directories, etc."""
     def __init__(self, name, vars={}, models={}, default_models={}, regions={},
-                 direc_out='', nc_dir_struc=False, verbose=True, backend=None):
+                 direc_out='', nc_dir_struc=False, verbose=True, backend=None,
+                 db_on=True):
         self.backend = backend
+        self.db_on = db_on
         self.verbose = verbose
         if self.verbose:
             print ("Initializing Project instance: %s (%s)"
@@ -39,7 +39,8 @@ class Proj(object):
                 setattr(obj, 'proj', self)
 
         # Add to DB
-        self.db_obj = self.backend.add(self)
+        if (self.backend is not None) and (self.db_on):
+            self.db_obj = self.backend.add(self)
 
     def __str__(self):
         return 'Project instance "' + self.name + '"'

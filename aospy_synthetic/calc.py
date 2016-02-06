@@ -7,9 +7,6 @@ from .var import Var
 from .io import _data_in_label, _data_out_label, _ens_label, _yr_label
 from .timedate import TimeManager
 from .utils import get_parent_attr
-#from aospy_db import create_session, get_or_create
-#from aospy_db import Calc as dbCalc
-#from aospy_db import Var as dbVar
 
 
 dp = Var(
@@ -57,7 +54,7 @@ class CalcInterface(object):
                  date_range=None, region=None, intvl_in=None, intvl_out=None,
                  dtype_in_time=None, dtype_in_vert=None, dtype_out_time=None,
                  dtype_out_vert=None, level=None, chunk_len=False,
-                 verbose=True, backend=None):
+                 verbose=True, backend=None, db_on=True):
         """Create the CalcInterface object with the given parameters."""
         if run not in model.runs.values():
             raise AttributeError("Model '{}' has no run '{}'.  Calc object "
@@ -128,6 +125,7 @@ class CalcInterface(object):
         self.end_date_xray = tm.apply_year_offset(self.end_date)
 
         self.backend = backend
+        self.db_on = db_on
 
 
 class Calc(object):
@@ -209,10 +207,11 @@ class Calc(object):
         self.data_out = {}
 
         # Add rows to database.
-        for d in self.dtype_out_time:
-            clc = self.backend.add(self, filepath=self.path_scratch[d],
-                                   db_dtype_out_time=d,
-                                   pressure_type=str(self.level))
+        if (self.backend is not None) and (self.db_on):
+            for d in self.dtype_out_time:
+                clc = self.backend.add(self, filepath=self.path_scratch[d],
+                                       db_dtype_out_time=d,
+                                       pressure_type=str(self.level))
 
     def compute(self):
         """Perform all desired calculations on the data and save externally."""
