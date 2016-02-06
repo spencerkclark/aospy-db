@@ -8,8 +8,6 @@ import xray
 from .__config__ import (LAT_STR, LON_STR, PHALF_STR, PFULL_STR, PLEVEL_STR,
                    TIME_STR, TIME_STR_IDEALIZED)
 
-from aospy_db import create_session, get_or_create
-from aospy_db import Model as dbModel
 from .io import get_data_in_direc_repo
 from .utils import dict_name_keys
 
@@ -20,7 +18,10 @@ class Model(object):
                  data_in_direc=False, data_in_dir_struc=False,
                  data_in_dur=False, data_in_start_date=False,
                  data_in_end_date=False, default_date_range=False, runs={},
-                 default_runs={}, load_grid_data=False, repo_version=False):
+                 default_runs={}, load_grid_data=False, repo_version=False,
+                 backend=None, db_on=True):
+        self.backend = backend
+        self.db_on = db_on
         self.name = name
         self.description = description
         self.proj = proj
@@ -44,14 +45,8 @@ class Model(object):
 
         self.grid_data_is_set = False
 
-        # Add row to database.
-        session = create_session()
-        self.db_entry, isin = get_or_create(session, dbModel, defaults=None,
-                                            name=self.name)
-        if not self.db_entry.runs:
-            self.db_entry.runs = [r.db_entry for r in runs]
-        session.commit()
-        session.close()
+        if (self.backend is not None) and (self.db_on):
+            self.db_obj = self.backend.add(self)
 
 #        if load_grid_data:
 #            self.set_grid_data()

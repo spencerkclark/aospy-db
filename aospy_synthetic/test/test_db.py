@@ -5,6 +5,7 @@ from subprocess import call
 
 from test_objs import cases, models, example_projects, variables
 from aospy_synthetic.calc import Calc, CalcInterface
+from aospy_synthetic.SQLAlchemyDB import SQLBackend
 
 
 class AospySyntheticTestCase(unittest.TestCase):
@@ -15,7 +16,8 @@ class AospySyntheticTestCase(unittest.TestCase):
         self.variable = variables.mse
 
     def tearDown(self):
-        call(['rm', 'test.db'])
+#        call(['rm', 'test.db'])
+        pass
 
 
 class TestDB(AospySyntheticTestCase):
@@ -31,7 +33,7 @@ class TestDB(AospySyntheticTestCase):
                                   dtype_in_vert='sigma',
                                   dtype_out_time='avg',
                                   dtype_out_vert=False,
-                                  level=False)
+                                  level=False, backend=SQLBackend())
         calc = Calc(test_calc)
         calc.compute()
         self.assertEqual(calc.intvl_in, 'monthly')
