@@ -30,23 +30,3 @@ class AbstractBackend(object):
         the provided criteria in *args and **kwargs.
         """
         pass
-
-    class Proj(object):
-        __metaclass__ = ABCMeta
-        pass
-
-    class Model(object):
-        __metaclass__ = ABCMeta
-        pass
-
-    class Run(object):
-        __metaclass__ = ABCMeta
-        pass
-
-    class Var(object):
-        __metaclass__ = ABCMeta
-        pass
-
-    class Calc(object):
-        __metaclass__ = ABCMeta
-        pass
