@@ -5,7 +5,8 @@ from subprocess import call
 
 from test_objs import cases, models, example_projects, variables
 from aospy_synthetic.calc import Calc, CalcInterface
-from aospy_synthetic.SQLAlchemyDB import SQLBackend
+from test_objs.SQLBackend.SQLAlchemyDB import SQLBackend
+#from aospy_synthetic.SQLAlchemyDB import SQLBackend
 
 
 class AospySyntheticTestCase(unittest.TestCase):
