@@ -32,12 +32,13 @@ class AospyDBEntry(object):
         """Converts a DB object to an aospy object."""
         pass
 
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+
 
 class ProjDB(AospyDBEntry, Base):
     """A table containing pointers to aospy Proj objects."""
     __tablename__ = 'projects'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
     description = Column(String)
     direc_out = Column(String)
 
@@ -48,8 +49,6 @@ class ProjDB(AospyDBEntry, Base):
 class ModelDB(AospyDBEntry, Base):
     """A table containing pointers to Model objects."""
     __tablename__ = 'models'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
     proj_id = Column(Integer, ForeignKey('projects.id'))
     project = relationship("ProjDB", back_populates="models")
 
@@ -60,8 +59,6 @@ class ModelDB(AospyDBEntry, Base):
 class RunDB(AospyDBEntry, Base):
     """A table containing pointers to Run objects."""
     __tablename__ = 'runs'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
     description = Column(String)
     model_id = Column(Integer, ForeignKey('models.id'))
     model = relationship("ModelDB", back_populates="runs")
@@ -79,8 +76,6 @@ class RunDB(AospyDBEntry, Base):
 class VarDB(AospyDBEntry, Base):
     """A table containing pointers to Var objects."""
     __tablename__ = 'variables'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
     description = Column(String)
 
     def __repr__(self):
@@ -91,8 +86,6 @@ class VarDB(AospyDBEntry, Base):
 class CalcDB(AospyDBEntry, Base):
     """A table containing pointers to Var objects."""
     __tablename__ = 'calculations'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
     description = Column(String)
     filepath = Column(String)
     var_id = Column(Integer, ForeignKey('variables.id'))
