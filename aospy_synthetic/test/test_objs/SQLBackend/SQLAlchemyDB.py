@@ -37,7 +37,7 @@ class SQLBackend(AbstractBackend):
     def add(self, AospyObj):
         """Adds an aospy object to the database.
         """
-        engine = create_engine(self.DB_PATH)
+        engine = create_engine(self.DB_PATH, echo=True)
         Session = sessionmaker(bind=engine)
         session = Session()
         db_obj = self.db_obj_from_aospy(AospyObj).as_unique(session, AospyObj)

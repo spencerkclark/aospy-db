@@ -216,6 +216,7 @@ class Calc(object):
             for d in self.dtype_out_time:
                 temp = self.dtype_out_time
                 self.dtype_out_time = d
+                print(hasattr(self, 'var'))
                 clc = self.backend.add(self)
                 self.dtype_out_time = temp
 #                clc = self.backend.add(self, filepath=self.path_scratch[d],

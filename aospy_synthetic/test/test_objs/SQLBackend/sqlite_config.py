@@ -41,6 +41,7 @@ class UniqueMixin(object):
     _parent_cls = None
     _parent_attr = None
     _metadata_attrs = {}
+    _db_attrs = {}
     hash = Column(String)
 
     @classmethod
@@ -65,7 +66,11 @@ class UniqueMixin(object):
 
     @classmethod
     def _get_parent(cls, session, AospyObj):
-        cls._parent_cls.as_unique(session, AospyObj._parent)
+        return cls._parent_cls.as_unique(session, AospyObj._parent)
+
+    @staticmethod
+    def _get_db_obj(cls, session, AospyObj):
+        return cls.as_unique(session, AospyObj)
 
     def __init__(self, session, AospyObj):
         self.hash = hash(AospyObj)
@@ -76,6 +81,14 @@ class UniqueMixin(object):
             if hasattr(AospyObj, self._metadata_attrs[key]):
                 setattr(self, key, getattr(AospyObj,
                                            self._metadata_attrs[key]))
+
+        for key in self._db_attrs:
+            if hasattr(AospyObj, self._db_attrs[key]['obj']):
+                setattr(self, key,
+                        self._get_db_obj(self._db_attrs[key]['db_cls'],
+                                         session,
+                                         getattr(AospyObj,
+                                                 self._db_attrs[key]['obj'])))
 
 
 class ProjDB(UniqueMixin, Base):
@@ -140,6 +153,29 @@ class RunDB(UniqueMixin, Base):
     data_in_direc = Column(String)
 
 
+class VarDB(UniqueMixin, Base):
+    __tablename__ = 'vars'
+    _metadata_attrs = {
+        'name': 'name',
+        'description': 'description',
+    }
+    id = Column(Integer, primary_key=True)
+    calcs = relationship('CalcDB', back_populates='var')
+
+    # _metadata_attrs
+    name = Column(String)
+    description = Column(String)
+
+    # TODO properly handle aospy Units objects (they should probably be another
+    # table)
+
+
+class RegDB(UniqueMixin, Base):
+    __tablename__ = 'regs'
+    id = Column(Integer, primary_key=True)
+    calcs = relationship('CalcDB', back_populates='reg')
+
+
 class CalcDB(UniqueMixin, Base):
     __tablename__ = 'calcs'
     _parent_cls = RunDB
@@ -151,6 +187,12 @@ class CalcDB(UniqueMixin, Base):
         'start_date': 'start_date',
         'end_date': 'end_date',
         'pressure_type': 'pressure_type'
+    }
+    _db_attrs = {
+        'var': {
+            'db_cls': VarDB,
+            'obj': 'var'
+        },
     }
 
     id = Column(Integer, primary_key=True)
@@ -171,26 +213,5 @@ class CalcDB(UniqueMixin, Base):
     end_date = Column(DateTime)
     pressure_type = Column(String)
 
-
-class VarDB(Base):
-    __tablename__ = 'vars'
-    _metadata_attrs = {
-        'name': 'name',
-        'description': 'description',
-        'units': 'units'
-    }
-    id = Column(Integer, primary_key=True)
-    calcs = relationship('CalcDB', back_populates='var')
-
-    # _metadata_attrs
-    name = Column(String)
-    description = Column(String)
-    units = Column(String)
-
-
-class RegDB(Base):
-    __tablename__ = 'regs'
-    id = Column(Integer, primary_key=True)
-    calcs = relationship('CalcDB', back_populates='reg')
 
 Base.metadata.create_all(engine)
