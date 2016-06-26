@@ -53,6 +53,9 @@ class Var(object):
         self.colormap = colormap
         self.valid_range = valid_range
 
+    def __hash__(self):
+        return hash((str(type(self)), self.name))
+
     def __str__(self):
         return 'Var instance "' + self.name + '"'
 

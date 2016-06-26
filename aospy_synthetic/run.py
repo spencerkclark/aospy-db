@@ -29,6 +29,8 @@ class Run(object):
         self.description = description
         self.proj = proj
 
+        self._parent = None
+
         self.data_in_dur = data_in_dur
         self.data_in_dir_struc = data_in_dir_struc
         self.data_in_suffix = data_in_suffix
@@ -49,6 +51,9 @@ class Run(object):
         self.ens_mem_suffix = ens_mem_suffix
         self.data_in_direc = self._set_direc(data_in_direc, ens_mem_prefix,
                                              ens_mem_ext, ens_mem_suffix)
+
+    def __hash__(self):
+        return hash((str(type(self)), self.name, self._parent))
 
     def __str__(self):
         return 'Run instance "%s"' % self.name

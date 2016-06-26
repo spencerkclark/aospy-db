@@ -1,3 +1,5 @@
+"""SQLAlchemy DB Setup: UniqueMixin design pattern adapted from:
+https://bitbucket.org/zzzeek/sqlalchemy/wiki/UsageRecipes/UniqueObject"""
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy import create_engine, ForeignKey
@@ -8,130 +10,124 @@ engine = create_engine(DB_PATH)
 Base = declarative_base()
 
 
-class AospyDBEntry(object):
-    """A generic aospy object that enters the database."""
+def _unique(session, cls, hashfunc, queryfunc, constructor, args, kwargs):
+    cache = getattr(session, '_unique_cache', None)
+    if cache is None:
+        session._unique_cache = cache = {}
 
-    def __init__(self, AospyObj, **kwargs):
-        """Instantiates a database object from an aospy object based on the
-        object's overlapping attributes with the database columns.
+    key = (cls, hashfunc(*args, **kwargs))
 
-        Essentially, if we track the attributes in the database, they will
-        enter the database automatically.
-        """
-        for attr, value in AospyObj.__dict__.iteritems():
-            if hasattr(type(self), attr) and (attr not in ['runs',
-                                                           'models',
-                                                           'projects',
-                                                           'calcs']):
-                setattr(self, attr, getattr(AospyObj, attr))
-        for attr in kwargs:
-            if hasattr(type(self), attr):
-                setattr(self, attr, kwargs[attr])
+    # First check to see if the row was added to the session
+    if key in cache:
+        return cache[key]
 
-    def to_aospy_obj(self, EmptyAospyObj, **kwargs):
-        """Converts a DB object to an aospy object."""
-        pass
+    # Then check if row is already in the DB
+    else:
+        with session.no_autoflush:
+            q = session.query(cls)
+            q = queryfunc(q, *args, **kwargs)
+            obj = q.first()
+
+            # If it is not in the DB or session cache, create a new row
+            if not obj:
+                obj = constructor(session, *args, **kwargs)
+                session.add(obj)
+        cache[key] = obj
+    return obj
 
 
-class ProjDB(AospyDBEntry, Base):
-    """A table containing pointers to aospy Proj objects."""
+class UniqueMixin(object):
+
+    _parent_cls = None
+    _parent_attr = None
+    hash = Column(String)
+
+    @classmethod
+    def unique_hash(cls, AospyObj):
+        return hash(AospyObj)
+
+    @classmethod
+    def unique_filter(cls, query, AospyObj):
+        return query.filter_by(hash=hash(AospyObj))
+
+    @classmethod
+    def as_unique(cls, session, *args, **kwargs):
+        return _unique(
+            session,
+            cls,
+            cls.unique_hash,
+            cls.unique_filter,
+            cls,
+            args,
+            kwargs
+        )
+
+    @classmethod
+    def _get_parent(cls, session, AospyObj):
+        cls._parent_cls.as_unique(session, AospyObj._parent)
+
+    def __init__(self, session, AospyObj):
+        self.hash = hash(AospyObj)
+        if self._parent_cls:
+            setattr(self, self._parent_attr, self._get_parent(session,
+                                                              AospyObj))
+
+
+class ProjDB(UniqueMixin, Base):
     __tablename__ = 'projects'
     id = Column(Integer, primary_key=True)
-    name = Column(String)
-    description = Column(String)
-    direc_out = Column(String)
-
-    def __repr__(self):
-        return "<ProjDB(name='%s')>" % self.name
+    models = relationship('ModelDB', back_populates='project')
 
 
-class ModelDB(AospyDBEntry, Base):
-    """A table containing pointers to Model objects."""
+class ModelDB(UniqueMixin, Base):
     __tablename__ = 'models'
+    _parent_cls = ProjDB
+    _parent_attr = 'project'
+
     id = Column(Integer, primary_key=True)
-    name = Column(String)
-    proj_id = Column(Integer, ForeignKey('projects.id'))
-    project = relationship("ProjDB", back_populates="models")
+    project_id = Column(Integer, ForeignKey('projects.id'))
+    project = relationship('ProjDB', back_populates='models')
 
-    def __repr__(self):
-        return "<ModelDB(name='%s')>" % self.name
+    runs = relationship('RunDB', back_populates='model')
 
 
-class RunDB(AospyDBEntry, Base):
-    """A table containing pointers to Run objects."""
+class RunDB(UniqueMixin, Base):
     __tablename__ = 'runs'
+    _parent_cls = ModelDB
+    _parent_attr = 'model'
+
     id = Column(Integer, primary_key=True)
-    name = Column(String)
-    description = Column(String)
     model_id = Column(Integer, ForeignKey('models.id'))
-    model = relationship("ModelDB", back_populates="runs")
-    data_in_start_date = Column(DateTime)
-    data_in_end_date = Column(DateTime)
-    data_in_dur = Column(Integer)
-    data_in_direc = Column(String)
+    model = relationship('ModelDB', back_populates='runs')
 
-    def __repr__(self):
-        return "<RunDB(name='%s', description='%s', model=%d)>" % (self.name,
-                                                                   self.description,
-                                                                   self.model_id)
+    calcs = relationship('CalcDB', back_populates='run')
 
 
-class VarDB(AospyDBEntry, Base):
-    """A table containing pointers to Var objects."""
-    __tablename__ = 'variables'
+class CalcDB(UniqueMixin, Base):
+    __tablename__ = 'calcs'
+    _parent_cls = RunDB
+    _parent_attr = 'run'
+
     id = Column(Integer, primary_key=True)
-    name = Column(String)
-    description = Column(String)
-
-    def __repr__(self):
-        return "<VarDB(name='%s', description='%s')>" % (self.name,
-                                                         self.description)
-
-
-class CalcDB(AospyDBEntry, Base):
-    """A table containing pointers to Var objects."""
-    __tablename__ = 'calculations'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    description = Column(String)
-    filepath = Column(String)
-    var_id = Column(Integer, ForeignKey('variables.id'))
-    db_var = relationship("VarDB", back_populates="calculations")
     run_id = Column(Integer, ForeignKey('runs.id'))
-    db_run = relationship("RunDB", back_populates="calculations")
-    intvl_in = Column(String)
-    intvl_out = Column(String)
-    db_dtype_out_time = Column(String)
-    units = Column(String)
-    start_date = Column(DateTime)
-    end_date = Column(DateTime)
-    pressure_type = Column(String)
+    run = relationship('RunDB', back_populates='calcs')
 
-    def __repr__(self):
-        r = ('<aospy.CalcDB(var: %s)>\n'
-             'Attributes:\n'
-             '  * filepath:\t\t%s\n'
-             '  * description:\t%s\n'
-             '  * intvl_in:\t\t%s\n'
-             '  * intvl_out:\t\t%s\n'
-             '  * dtype_out_time:\t\t%s\n'
-             % (self.name, self.filepath, self.description,
-                self.intvl_in, self.intvl_out, self.dtype_out_time))
-        return r
+    var_id = Column(Integer, ForeignKey('vars.id'))
+    var = relationship('VarDB', back_populates='calcs')
 
-# Set up the relationships.
-ProjDB.models = relationship("ModelDB",
-                             order_by=ModelDB.id,
-                             back_populates="project")
-ModelDB.runs = relationship("RunDB",
-                            order_by=RunDB.id,
-                            back_populates="model")
-RunDB.calculations = relationship("CalcDB",
-                                  order_by=CalcDB.id,
-                                  back_populates="db_run")
-VarDB.calculations = relationship("CalcDB",
-                                  order_by=CalcDB.id,
-                                  back_populates="db_var")
+    reg_id = Column(Integer, ForeignKey('regs.id'))
+    reg = relationship('RegDB', back_populates='calcs')
 
+
+class VarDB(Base):
+    __tablename__ = 'vars'
+    id = Column(Integer, primary_key=True)
+    calcs = relationship('CalcDB', back_populates='var')
+
+
+class RegDB(Base):
+    __tablename__ = 'regs'
+    id = Column(Integer, primary_key=True)
+    calcs = relationship('CalcDB', back_populates='reg')
 
 Base.metadata.create_all(engine)

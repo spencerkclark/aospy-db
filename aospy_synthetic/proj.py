@@ -21,6 +21,8 @@ class Proj(object):
 
         if models:
             self.models = dict_name_keys(models)
+            for model in models:
+                model._parent = self
         else:
             self.models = {}
         if default_models == 'all':
@@ -39,10 +41,13 @@ class Proj(object):
                 setattr(obj, 'proj', self)
 
         # Add to DB
-        if (self.backend is not None) and (self.db_on):
-            self.db_obj = self.backend.add(self)
+#        if (self.backend is not None) and (self.db_on):
+#            self.db_obj = self.backend.add(self)
 
     def __str__(self):
         return 'Project instance "' + self.name + '"'
+
+    def __hash__(self):
+        return hash((str(type(self)), self.name))
 
     __repr__ = __str__

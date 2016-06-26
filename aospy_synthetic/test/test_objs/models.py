@@ -3,7 +3,6 @@ import cases as runs
 #import idealized
 from SQLBackend.SQLAlchemyDB import SQLBackend
 
-
 am2 = Model(
     name='am2',
     grid_file_paths=(

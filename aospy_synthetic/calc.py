@@ -77,6 +77,8 @@ class CalcInterface(object):
         self.model = model
         self.run = run
 
+        self._parent = run[0]
+
         self._set_data_in_attrs()
 
         self.proj_str = '_'.join(set([p.name for p in self.proj]))
@@ -130,6 +132,9 @@ class CalcInterface(object):
 
 class Calc(object):
     """Class for executing, saving, and loading a single computation."""
+
+    def __hash__(self):
+        return hash((str(type(self)), self.name, self._parent))
 
     ARR_XRAY_NAME = 'aospy_result'
 
@@ -209,9 +214,10 @@ class Calc(object):
         # Add rows to database.
         if (self.backend is not None) and (self.db_on):
             for d in self.dtype_out_time:
-                clc = self.backend.add(self, filepath=self.path_scratch[d],
-                                       db_dtype_out_time=d,
-                                       pressure_type=str(self.level))
+                clc = self.backend.add(self)
+#                clc = self.backend.add(self, filepath=self.path_scratch[d],
+#                                       db_dtype_out_time=d,
+#                                       pressure_type=str(self.level))
 
     def compute(self):
         """Perform all desired calculations on the data and save externally."""

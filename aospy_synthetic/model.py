@@ -37,6 +37,13 @@ class Model(object):
         self.default_date_range = default_date_range
 
         self.runs = dict_name_keys(runs)
+
+        self._parent = None
+
+        if runs:
+            for run in runs:
+                run._parent = self
+
         [setattr(run, 'parent', self) for run in self.runs.values()]
         if default_runs:
             self.default_runs = dict_name_keys(default_runs)
@@ -45,8 +52,8 @@ class Model(object):
 
         self.grid_data_is_set = False
 
-        if (self.backend is not None) and (self.db_on):
-            self.db_obj = self.backend.add(self)
+#        if (self.backend is not None) and (self.db_on):
+#            self.db_obj = self.backend.add(self)
 
 #        if load_grid_data:
 #            self.set_grid_data()
@@ -54,6 +61,9 @@ class Model(object):
 
     def __str__(self):
         return 'Model instance "' + self.name + '"'
+
+    def __hash__(self):
+        return hash((str(type(self)), self.name, self._parent))
 
     __repr__ = __str__
 
