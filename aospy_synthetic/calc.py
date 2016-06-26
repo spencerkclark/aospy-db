@@ -214,10 +214,14 @@ class Calc(object):
         # Add rows to database.
         if (self.backend is not None) and (self.db_on):
             for d in self.dtype_out_time:
+                temp = self.dtype_out_time
+                self.dtype_out_time = d
                 clc = self.backend.add(self)
+                self.dtype_out_time = temp
 #                clc = self.backend.add(self, filepath=self.path_scratch[d],
 #                                       db_dtype_out_time=d,
 #                                       pressure_type=str(self.level))
+
 
     def compute(self):
         """Perform all desired calculations on the data and save externally."""

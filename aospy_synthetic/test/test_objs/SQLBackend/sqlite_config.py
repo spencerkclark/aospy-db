@@ -40,6 +40,7 @@ class UniqueMixin(object):
 
     _parent_cls = None
     _parent_attr = None
+    _metadata_attrs = {}
     hash = Column(String)
 
     @classmethod
@@ -71,18 +72,35 @@ class UniqueMixin(object):
         if self._parent_cls:
             setattr(self, self._parent_attr, self._get_parent(session,
                                                               AospyObj))
+        for key in self._metadata_attrs:
+            if hasattr(AospyObj, self._metadata_attrs[key]):
+                setattr(self, key, getattr(AospyObj,
+                                           self._metadata_attrs[key]))
 
 
 class ProjDB(UniqueMixin, Base):
     __tablename__ = 'projects'
+    _metadata_attrs = {
+        'name': 'name',
+        'description': 'description',
+        'direc_out': 'direc_out'
+    }
     id = Column(Integer, primary_key=True)
     models = relationship('ModelDB', back_populates='project')
+
+    # _metadata_attrs
+    name = Column(String)
+    description = Column(String)
+    direc_out = Column(String)
 
 
 class ModelDB(UniqueMixin, Base):
     __tablename__ = 'models'
     _parent_cls = ProjDB
     _parent_attr = 'project'
+    _metadata_attrs = {
+        'name': 'name'
+    }
 
     id = Column(Integer, primary_key=True)
     project_id = Column(Integer, ForeignKey('projects.id'))
@@ -90,11 +108,22 @@ class ModelDB(UniqueMixin, Base):
 
     runs = relationship('RunDB', back_populates='model')
 
+    # _metadata_attrs
+    name = Column(String)
+
 
 class RunDB(UniqueMixin, Base):
     __tablename__ = 'runs'
     _parent_cls = ModelDB
     _parent_attr = 'model'
+    _metadata_attrs = {
+        'name': 'name',
+        'description': 'description',
+        'data_in_start_date': 'data_in_start_date',
+        'data_in_end_date': 'data_in_end_date',
+        'data_in_dur': 'data_in_dur',
+        'data_in_direc': 'data_in_direc'
+    }
 
     id = Column(Integer, primary_key=True)
     model_id = Column(Integer, ForeignKey('models.id'))
@@ -102,11 +131,27 @@ class RunDB(UniqueMixin, Base):
 
     calcs = relationship('CalcDB', back_populates='run')
 
+    # _metadata_attrs
+    name = Column(String)
+    description = Column(String)
+    data_in_start_date = Column(DateTime)
+    data_in_end_date = Column(DateTime)
+    data_in_dur = Column(Integer)
+    data_in_direc = Column(String)
+
 
 class CalcDB(UniqueMixin, Base):
     __tablename__ = 'calcs'
     _parent_cls = RunDB
     _parent_attr = 'run'
+    _metadata_attrs = {
+        'intvl_in': 'intvl_in',
+        'intvl_out': 'intvl_out',
+        'dtype_out_time': 'dtype_out_time',
+        'start_date': 'start_date',
+        'end_date': 'end_date',
+        'pressure_type': 'pressure_type'
+    }
 
     id = Column(Integer, primary_key=True)
     run_id = Column(Integer, ForeignKey('runs.id'))
@@ -118,11 +163,29 @@ class CalcDB(UniqueMixin, Base):
     reg_id = Column(Integer, ForeignKey('regs.id'))
     reg = relationship('RegDB', back_populates='calcs')
 
+    # _metadata_attrs
+    intvl_in = Column(String)
+    intvl_out = Column(String)
+    dtype_out_time = Column(String)
+    start_date = Column(DateTime)
+    end_date = Column(DateTime)
+    pressure_type = Column(String)
+
 
 class VarDB(Base):
     __tablename__ = 'vars'
+    _metadata_attrs = {
+        'name': 'name',
+        'description': 'description',
+        'units': 'units'
+    }
     id = Column(Integer, primary_key=True)
     calcs = relationship('CalcDB', back_populates='var')
+
+    # _metadata_attrs
+    name = Column(String)
+    description = Column(String)
+    units = Column(String)
 
 
 class RegDB(Base):
