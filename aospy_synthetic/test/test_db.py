@@ -15,6 +15,7 @@ class AospySyntheticTestCase(unittest.TestCase):
         self.model = models.am2
         self.run = cases.am2_control
         self.variable = variables.mse
+        self.variable2 = variables.dse
 
     def tearDown(self):
 #        call(['rm', 'test.db'])
@@ -27,6 +28,23 @@ class TestDB(AospySyntheticTestCase):
                                   model=self.model,
                                   run=self.run,
                                   var=self.variable,
+                                  date_range=('0021-01-01', '0080-12-31'),
+                                  intvl_in='monthly',
+                                  intvl_out='son',
+                                  dtype_in_time='ts',
+                                  dtype_in_vert='sigma',
+                                  dtype_out_time='avg',
+                                  dtype_out_vert=False,
+                                  level=False, backend=SQLBackend())
+        calc = Calc(test_calc)
+        calc.compute()
+        self.assertEqual(calc.intvl_in, 'monthly')
+
+    def test_calc2(self):
+        test_calc = CalcInterface(proj=self.proj,
+                                  model=self.model,
+                                  run=self.run,
+                                  var=self.variable2,
                                   date_range=('0021-01-01', '0080-12-31'),
                                   intvl_in='monthly',
                                   intvl_out='son',

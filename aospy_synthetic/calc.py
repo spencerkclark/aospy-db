@@ -110,10 +110,11 @@ class CalcInterface(object):
         self.dtype_in_time = dtype_in_time
         self.dtype_in_vert = dtype_in_vert
         self.ps = ps
-        if isinstance(dtype_out_time, (list, tuple)):
-            self.dtype_out_time = tuple(dtype_out_time)
-        else:
-            self.dtype_out_time = tuple([dtype_out_time])
+
+        # For now we'll change to make Calc one to one -- testing already works
+        # this way.  (It doesn't use the CalcInterface -- CalcInterface may be
+        # all we need to change to change Calc to one to one in reality).
+        self.dtype_out_time = dtype_out_time
         self.dtype_out_vert = dtype_out_vert
         self.region = region
 
@@ -134,7 +135,11 @@ class Calc(object):
     """Class for executing, saving, and loading a single computation."""
 
     def __hash__(self):
-        return hash((str(type(self)), self.name, self._parent))
+        if self.region:
+            return hash((str(type(self)), self.file_name,
+                         self.region.name, self._parent))
+        else:
+            return hash((str(type(self)), self.file_name, self._parent))
 
     ARR_XRAY_NAME = 'aospy_result'
 
@@ -175,7 +180,7 @@ class Calc(object):
         ).replace('..', '.')
 
     def _path_scratch(self, dtype_out_time):
-        return os.path.join(self.dir_scratch, self.file_name[dtype_out_time])
+        return os.path.join(self.dir_scratch, self.file_name)
 
     def _path_archive(self):
         return os.path.join(self.dir_archive, 'data.tar')
@@ -204,25 +209,15 @@ class Calc(object):
 
         self.dir_scratch = self._dir_scratch()
         self.dir_archive = self._dir_archive()
-        self.file_name = {d: self._file_name(d) for d in self.dtype_out_time}
-        self.path_scratch = {d: self._path_scratch(d)
-                             for d in self.dtype_out_time}
+        self.file_name = self._file_name(self.dtype_out_time)
+        self.path_scratch = self._path_scratch(self.dtype_out_time)
         self.path_archive = self._path_archive()
 
         self.data_out = {}
 
         # Add rows to database.
         if (self.backend is not None) and (self.db_on):
-            for d in self.dtype_out_time:
-                temp = self.dtype_out_time
-                self.dtype_out_time = d
-                print(hasattr(self, 'var'))
-                clc = self.backend.add(self)
-                self.dtype_out_time = temp
-#                clc = self.backend.add(self, filepath=self.path_scratch[d],
-#                                       db_dtype_out_time=d,
-#                                       pressure_type=str(self.level))
-
+            self.backend.add(self)
 
     def compute(self):
         """Perform all desired calculations on the data and save externally."""
@@ -231,46 +226,47 @@ class Calc(object):
         # Compute only the needed timeseries.
         self._print_verbose('\n', 'Computing desired timeseries for '
                             '{} -- {}.'.format(self.start_date, self.end_date))
-        bool_monthly = (['monthly_from' in self.dtype_in_time] +
-                        ['time-mean' in dout for dout in self.dtype_out_time])
-        bool_eddy = ['eddy' in dout for dout in self.dtype_out_time]
+        bool_monthly = (['monthly_from' in self.dtype_in_time,
+                         'time-mean' in self.dtype_out_time])
+        bool_eddy = 'eddy' in self.dtype_out_time
         if not all(bool_monthly):
             full_ts, full_dt = (1, 1)
         else:
             full_ts = False
-        if any(bool_eddy) or any(bool_monthly):
+        if bool_eddy or bool_monthly:
             monthly_ts, monthly_dt = (1, 1)
         else:
             monthly_ts = False
-        if any(bool_eddy):
+        if bool_eddy:
             eddy_ts = 1
         else:
             eddy_ts = False
 
         # Average within each year.
-        if not all(bool_monthly):
+        if not bool_monthly:
             full_ts = 1
-        if any(bool_monthly):
+        if bool_monthly:
             monthly_ts = 1
-        if any(bool_eddy):
+        if bool_eddy:
             eddy_ts = 1
         # Apply time reduction methods.
         if self.def_time:
             self._print_verbose("Applying desired time-reduction methods.")
             # Determine which are regional, eddy, time-mean.
-            reduc_specs = [r.split('.') for r in self.dtype_out_time]
+            specs = self.dtype_out_time.split('.')
             reduced = {}
-            for reduc, specs in zip(self.dtype_out_time, reduc_specs):
-                if 'eddy' in specs:
-                    data = eddy_ts
-                elif 'time-mean' in specs:
-                    data = monthly_ts
-                else:
-                    data = full_ts
-                if 'reg' in specs:
-                    reduced.update({reduc: 1})
-                else:
-                    reduced.update({reduc: 1})
+            reduc = self.dtype_out_time
+
+            if 'eddy' in specs:
+                data = eddy_ts
+            elif 'time-mean' in specs:
+                data = monthly_ts
+            else:
+                data = full_ts
+            if 'reg' in specs:
+                reduced.update({reduc: 1})
+            else:
+                reduced.update({reduc: 1})
         else:
             reduced = {'': full_ts}
 
@@ -281,7 +277,7 @@ class Calc(object):
 
     def _save_to_scratch(self, data, dtype_out_time):
         """Save the data to the scratch filesystem."""
-        path = self.path_scratch[dtype_out_time]
+        path = self.path_scratch
         ##### SKC ADD TO DATABASE HERE #####
 
     def _update_data_out(self, data, dtype):
@@ -297,4 +293,4 @@ class Calc(object):
         self._update_data_out(data, dtype_out_time)
         if scratch:
             self._save_to_scratch(data, dtype_out_time)
-        print('\t', '{}'.format(self.path_scratch[dtype_out_time]))
+        print('\t', '{}'.format(self.path_scratch))
