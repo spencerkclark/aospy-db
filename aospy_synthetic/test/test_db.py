@@ -3,7 +3,8 @@
 import unittest
 from subprocess import call
 
-from test_objs import cases, models, example_projects, variables
+from test_objs import (cases, models, example_projects, variables,
+                       regions)
 from aospy_synthetic.calc import Calc, CalcInterface
 from test_objs.SQLBackend.SQLAlchemyDB import SQLBackend
 #from aospy_synthetic.SQLAlchemyDB import SQLBackend
@@ -52,6 +53,24 @@ class TestDB(AospySyntheticTestCase):
                                   dtype_in_vert='sigma',
                                   dtype_out_time='avg',
                                   dtype_out_vert=False,
+                                  level=False, backend=SQLBackend())
+        calc = Calc(test_calc)
+        calc.compute()
+        self.assertEqual(calc.intvl_in, 'monthly')
+
+    def test_region_calc(self):
+        test_calc = CalcInterface(proj=self.proj,
+                                  model=self.model,
+                                  run=self.run,
+                                  var=self.variable2,
+                                  date_range=('0021-01-01', '0080-12-31'),
+                                  intvl_in='monthly',
+                                  intvl_out='son',
+                                  dtype_in_time='ts',
+                                  dtype_in_vert='sigma',
+                                  dtype_out_time='avg',
+                                  dtype_out_vert=False,
+                                  region=regions.nh,
                                   level=False, backend=SQLBackend())
         calc = Calc(test_calc)
         calc.compute()

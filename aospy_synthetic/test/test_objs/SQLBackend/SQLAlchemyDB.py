@@ -8,7 +8,7 @@ from sqlite_config import ProjDB, ModelDB, RunDB, VarDB, CalcDB, RegDB
 class SQLBackend(AbstractBackend):
     """Implements AbstractBackend methods"""
 
-    def __init__(self, db_path='pass'):
+    def __init__(self, db_path='sqlite:///test.db'):
         """Initializes a sqlite database using SQLAlchemy.
 
         Parameters
@@ -21,7 +21,7 @@ class SQLBackend(AbstractBackend):
         db : SQLAlchemyDB
             backend for use in aospy
         """
-        self.DB_PATH = 'sqlite:///test.db'
+        self.DB_PATH = db_path
 
     def db_obj_from_aospy(self, AospyObj):
         mapping = {
@@ -37,7 +37,7 @@ class SQLBackend(AbstractBackend):
     def add(self, AospyObj):
         """Adds an aospy object to the database.
         """
-        engine = create_engine(self.DB_PATH, echo=True)
+        engine = create_engine(self.DB_PATH, echo=False)
         Session = sessionmaker(bind=engine)
         session = Session()
         db_obj = self.db_obj_from_aospy(AospyObj).as_unique(session, AospyObj)

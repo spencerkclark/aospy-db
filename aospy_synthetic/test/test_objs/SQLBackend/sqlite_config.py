@@ -84,11 +84,13 @@ class UniqueMixin(object):
 
         for key in self._db_attrs:
             if hasattr(AospyObj, self._db_attrs[key]['obj']):
-                setattr(self, key,
-                        self._get_db_obj(self._db_attrs[key]['db_cls'],
-                                         session,
-                                         getattr(AospyObj,
-                                                 self._db_attrs[key]['obj'])))
+                sub_obj = getattr(AospyObj, self._db_attrs[key]['obj'])
+                if sub_obj:
+                    setattr(self, key,
+                            self._get_db_obj(self._db_attrs[key]['db_cls'],
+                                             session,
+                                             getattr(AospyObj,
+                                                     self._db_attrs[key]['obj'])))
 
 
 class ProjDB(UniqueMixin, Base):
@@ -172,8 +174,16 @@ class VarDB(UniqueMixin, Base):
 
 class RegDB(UniqueMixin, Base):
     __tablename__ = 'regs'
+    _metadata_attrs = {
+        'name': 'name',
+        'description': 'description'
+    }
     id = Column(Integer, primary_key=True)
     calcs = relationship('CalcDB', back_populates='reg')
+
+    # _metadata_attrs
+    name = Column(String)
+    description = Column(String)
 
 
 class CalcDB(UniqueMixin, Base):
@@ -193,6 +203,10 @@ class CalcDB(UniqueMixin, Base):
             'db_cls': VarDB,
             'obj': 'var'
         },
+        'reg': {
+            'db_cls': RegDB,
+            'obj': 'region'
+        }
     }
 
     id = Column(Integer, primary_key=True)
