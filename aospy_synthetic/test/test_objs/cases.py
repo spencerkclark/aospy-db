@@ -1,5 +1,5 @@
 from aospy_synthetic.run import Run
-from SQLBackend.SQLAlchemyDB import SQLBackend
+from aospy_synthetic.db.sql.sql_backend import SQLBackend
 
 am2_control = Run(
     name='am2_control',

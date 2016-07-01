@@ -1,7 +1,7 @@
 from aospy_synthetic.proj import Proj
 import variables
 import models
-from SQLBackend.SQLAlchemyDB import SQLBackend
+from aospy_synthetic.db.sql.sql_backend import SQLBackend
 
 example = Proj(
     'example',

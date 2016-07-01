@@ -6,7 +6,7 @@ from subprocess import call
 from test_objs import (cases, models, example_projects, variables,
                        regions)
 from aospy_synthetic.calc import Calc, CalcInterface
-from test_objs.SQLBackend.SQLAlchemyDB import SQLBackend
+from aospy_synthetic.db.sql.sql_backend import SQLBackend
 #from aospy_synthetic.SQLAlchemyDB import SQLBackend
 
 

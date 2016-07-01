@@ -1,7 +1,7 @@
 from aospy_synthetic.model import Model
 import cases as runs
 #import idealized
-from SQLBackend.SQLAlchemyDB import SQLBackend
+from aospy_synthetic.db.sql.sql_backend import SQLBackend
 
 am2 = Model(
     name='am2',

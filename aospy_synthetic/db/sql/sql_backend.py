@@ -1,8 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from aospy_synthetic.abstract_db import AbstractBackend
-from sqlite_config import ProjDB, ModelDB, RunDB, VarDB, CalcDB, RegDB
+from aospy_synthetic.db.abstract_db import AbstractBackend
+from sqlalchemy_config import ProjDB, ModelDB, RunDB, VarDB, CalcDB, RegDB
 
 
 class SQLBackend(AbstractBackend):
