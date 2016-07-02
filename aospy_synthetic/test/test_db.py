@@ -23,7 +23,7 @@ class TestProjDB(unittest.TestCase):
 
     def test_add(self):
         self.db.add(self.AospyObj)
-        with self.db.session_scope() as session:
+        with self.db._session_scope() as session:
             q = session.query(self.db_cls)
             db_obj = q.filter_by(hash=hash(self.AospyObj)).first()
 
@@ -36,7 +36,7 @@ class TestProjDB(unittest.TestCase):
     def test_uniqueness_checking(self):
         self.db.add(self.AospyObj)
         self.db.add(self.AospyObj)  # Call add on a duplicate object
-        with self.db.session_scope() as session:
+        with self.db._session_scope() as session:
             q = session.query(self.db_cls)
             db_objs = q.filter_by(hash=hash(self.AospyObj)).all()
             self.assertEqual(len(db_objs), 1)
@@ -46,7 +46,7 @@ class TestProjDB(unittest.TestCase):
         self.db.add(self.AospyObj)
         setattr(self.AospyObj, self.ex_str_attr, 'updated')
         self.db.add(self.AospyObj)
-        with self.db.session_scope() as session:
+        with self.db._session_scope() as session:
             q = session.query(self.db_cls)
             db_objs = q.filter_by(hash=hash(self.AospyObj)).all()
             self.assertEqual(len(db_objs), 1)  # No duplicates

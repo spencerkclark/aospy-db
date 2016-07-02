@@ -30,7 +30,7 @@ class SQLAlchemyDB(AbstractBackend):
         initialize_db(self.DB_PATH)
 
     @contextmanager
-    def session_scope(self):
+    def _session_scope(self):
         session = self.Session()
         try:
             yield session
@@ -55,7 +55,7 @@ class SQLAlchemyDB(AbstractBackend):
     def add(self, AospyObj):
         """Adds an aospy object to the database.
         """
-        with self.session_scope() as session:
+        with self._session_scope() as session:
             db_obj = self._db_cls_from_aospy_cls(AospyObj).as_unique(session,
                                                                      AospyObj)
             session.add(db_obj)
