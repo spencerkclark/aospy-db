@@ -5,9 +5,12 @@ from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy import create_engine, ForeignKey
 from sqlalchemy.orm import relationship
 
-DB_PATH = 'sqlite:///test.db'
-engine = create_engine(DB_PATH)
 Base = declarative_base()
+
+
+def initialize_db(DB_PATH):
+    engine = create_engine(DB_PATH)
+    Base.metadata.create_all(engine)
 
 
 def _unique(session, cls, hashfunc, queryfunc, constructor, args, kwargs):
@@ -44,12 +47,12 @@ class UniqueMixin(object):
     _db_attrs = {}
     hash = Column(String)
 
-    @classmethod
-    def unique_hash(cls, AospyObj):
+    @staticmethod
+    def unique_hash(AospyObj):
         return hash(AospyObj)
 
-    @classmethod
-    def unique_filter(cls, query, AospyObj):
+    @staticmethod
+    def unique_filter(query, AospyObj):
         return query.filter_by(hash=hash(AospyObj))
 
     @classmethod
@@ -69,8 +72,8 @@ class UniqueMixin(object):
         return cls._parent_cls.as_unique(session, AospyObj._parent)
 
     @staticmethod
-    def _get_db_obj(cls, session, AospyObj):
-        return cls.as_unique(session, AospyObj)
+    def _get_db_obj(db_cls, session, AospyObj):
+        return db_cls.as_unique(session, AospyObj)
 
     def __init__(self, session, AospyObj):
         self.hash = hash(AospyObj)
@@ -89,15 +92,22 @@ class UniqueMixin(object):
                     setattr(self, key,
                             self._get_db_obj(self._db_attrs[key]['db_cls'],
                                              session,
-                                             getattr(AospyObj,
-                                                     self._db_attrs[key]['obj'])))
+                                             sub_obj))
+
+    def __repr__(self):
+        repr = ''
+        for attr in self.__class__._metadata_attrs:
+            repr += '{}: {}\n'.format(attr, getattr(self, attr))
+            return repr
+
+    def __str__(self):
+        return self.__repr__()
 
 
 class ProjDB(UniqueMixin, Base):
     __tablename__ = 'projects'
     _metadata_attrs = {
         'name': 'name',
-        'description': 'description',
         'direc_out': 'direc_out'
     }
     id = Column(Integer, primary_key=True)
@@ -105,7 +115,6 @@ class ProjDB(UniqueMixin, Base):
 
     # _metadata_attrs
     name = Column(String)
-    description = Column(String)
     direc_out = Column(String)
 
 
@@ -114,7 +123,8 @@ class ModelDB(UniqueMixin, Base):
     _parent_cls = ProjDB
     _parent_attr = 'project'
     _metadata_attrs = {
-        'name': 'name'
+        'name': 'name',
+        'description': 'description'
     }
 
     id = Column(Integer, primary_key=True)
@@ -125,6 +135,7 @@ class ModelDB(UniqueMixin, Base):
 
     # _metadata_attrs
     name = Column(String)
+    description = Column(String)
 
 
 class RunDB(UniqueMixin, Base):
@@ -172,14 +183,14 @@ class VarDB(UniqueMixin, Base):
     # table)
 
 
-class RegDB(UniqueMixin, Base):
-    __tablename__ = 'regs'
+class RegionDB(UniqueMixin, Base):
+    __tablename__ = 'regions'
     _metadata_attrs = {
         'name': 'name',
         'description': 'description'
     }
     id = Column(Integer, primary_key=True)
-    calcs = relationship('CalcDB', back_populates='reg')
+    calcs = relationship('CalcDB', back_populates='region')
 
     # _metadata_attrs
     name = Column(String)
@@ -196,7 +207,7 @@ class CalcDB(UniqueMixin, Base):
         'dtype_out_time': 'dtype_out_time',
         'start_date': 'start_date',
         'end_date': 'end_date',
-        'pressure_type': 'pressure_type'
+        'dtype_in_vert': 'dtype_in_vert'
     }
     _db_attrs = {
         'var': {
@@ -204,7 +215,7 @@ class CalcDB(UniqueMixin, Base):
             'obj': 'var'
         },
         'reg': {
-            'db_cls': RegDB,
+            'db_cls': RegionDB,
             'obj': 'region'
         }
     }
@@ -216,8 +227,8 @@ class CalcDB(UniqueMixin, Base):
     var_id = Column(Integer, ForeignKey('vars.id'))
     var = relationship('VarDB', back_populates='calcs')
 
-    reg_id = Column(Integer, ForeignKey('regs.id'))
-    reg = relationship('RegDB', back_populates='calcs')
+    region_id = Column(Integer, ForeignKey('regions.id'))
+    region = relationship('RegionDB', back_populates='calcs')
 
     # _metadata_attrs
     intvl_in = Column(String)
@@ -225,7 +236,4 @@ class CalcDB(UniqueMixin, Base):
     dtype_out_time = Column(String)
     start_date = Column(DateTime)
     end_date = Column(DateTime)
-    pressure_type = Column(String)
-
-
-Base.metadata.create_all(engine)
+    dtype_in_vert = Column(String)
