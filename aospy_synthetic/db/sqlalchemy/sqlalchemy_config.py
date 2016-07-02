@@ -89,10 +89,14 @@ class UniqueMixin(object):
             if hasattr(AospyObj, self._db_attrs[key]['obj']):
                 sub_obj = getattr(AospyObj, self._db_attrs[key]['obj'])
                 if sub_obj:
-                    setattr(self, key,
-                            self._get_db_obj(self._db_attrs[key]['db_cls'],
-                                             session,
-                                             sub_obj))
+                    setattr(
+                        self, key,
+                        self._get_db_obj(
+                            self._db_attrs[key]['db_cls'],
+                            session,
+                            sub_obj
+                        )
+                    )
 
     def __repr__(self):
         repr = ''
