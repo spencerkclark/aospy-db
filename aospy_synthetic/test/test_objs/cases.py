@@ -1,5 +1,5 @@
 from aospy_synthetic.run import Run
-from aospy_synthetic.db.sql.sql_backend import SQLBackend
+from aospy_synthetic.db.sqlalchemy.sqlalchemy_db import SQLAlchemyDB
 
 am2_control = Run(
     name='am2_control',
@@ -13,7 +13,7 @@ am2_control = Run(
     data_in_end_date='0080-12-31',
     default_date_range=('0021-01-01', '0080-12-31'),
     idealized=False,
-    backend=SQLBackend('path')
+    backend=SQLAlchemyDB('path')
 )
 
 am2_tropics = Run(
@@ -29,7 +29,7 @@ am2_tropics = Run(
     data_in_end_date='0080-12-31',
     default_date_range=('0021-01-01', '0080-12-31'),
     idealized=False,
-    backend=SQLBackend('path')
+    backend=SQLAlchemyDB('path')
 )
 
 am2_extratropics = Run(
@@ -45,7 +45,7 @@ am2_extratropics = Run(
     data_in_end_date='0080-12-31',
     default_date_range=('0021-01-01', '0080-12-31'),
     idealized=False,
-    backend=SQLBackend('path')
+    backend=SQLAlchemyDB('path')
 )
 
 am2_tropics_and_extratropics = Run(
@@ -60,7 +60,7 @@ am2_tropics_and_extratropics = Run(
     data_in_end_date='0080-12-31',
     default_date_range=('0021-01-01', '0080-12-31'),
     idealized=False,
-    backend=SQLBackend('path')
+    backend=SQLAlchemyDB('path')
 )
 
 # REYOI Runs - First year is 1982; we throw that out as spinup;

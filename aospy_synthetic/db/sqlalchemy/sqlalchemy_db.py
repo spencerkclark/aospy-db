@@ -5,7 +5,7 @@ from aospy_synthetic.db.abstract_db import AbstractBackend
 from sqlalchemy_config import ProjDB, ModelDB, RunDB, VarDB, CalcDB, RegDB
 
 
-class SQLBackend(AbstractBackend):
+class SQLAlchemyDB(AbstractBackend):
     """Implements AbstractBackend methods"""
 
     def __init__(self, db_path='sqlite:///test.db'):

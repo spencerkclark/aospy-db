@@ -6,7 +6,7 @@ from subprocess import call
 from test_objs import (cases, models, example_projects, variables,
                        regions)
 from aospy_synthetic.calc import Calc, CalcInterface
-from aospy_synthetic.db.sql.sql_backend import SQLBackend
+from aospy_synthetic.db.sqlalchemy.sqlalchemy_db import SQLAlchemyDB
 #from aospy_synthetic.SQLAlchemyDB import SQLBackend
 
 
@@ -36,7 +36,7 @@ class TestDB(AospySyntheticTestCase):
                                   dtype_in_vert='sigma',
                                   dtype_out_time='avg',
                                   dtype_out_vert=False,
-                                  level=False, backend=SQLBackend())
+                                  level=False, backend=SQLAlchemyDB())
         calc = Calc(test_calc)
         calc.compute()
         self.assertEqual(calc.intvl_in, 'monthly')
@@ -53,7 +53,7 @@ class TestDB(AospySyntheticTestCase):
                                   dtype_in_vert='sigma',
                                   dtype_out_time='avg',
                                   dtype_out_vert=False,
-                                  level=False, backend=SQLBackend())
+                                  level=False, backend=SQLAlchemyDB())
         calc = Calc(test_calc)
         calc.compute()
         self.assertEqual(calc.intvl_in, 'monthly')
@@ -71,7 +71,7 @@ class TestDB(AospySyntheticTestCase):
                                   dtype_out_time='avg',
                                   dtype_out_vert=False,
                                   region=regions.nh,
-                                  level=False, backend=SQLBackend())
+                                  level=False, backend=SQLAlchemyDB())
         calc = Calc(test_calc)
         calc.compute()
         self.assertEqual(calc.intvl_in, 'monthly')

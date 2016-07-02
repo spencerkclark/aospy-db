@@ -1,7 +1,7 @@
 from aospy_synthetic.model import Model
 import cases as runs
 #import idealized
-from aospy_synthetic.db.sql.sql_backend import SQLBackend
+from aospy_synthetic.db.sqlalchemy.sqlalchemy_db import SQLAlchemyDB
 
 am2 = Model(
     name='am2',
@@ -19,7 +19,7 @@ am2 = Model(
           runs.am2_tropics_and_extratropics],
     default_runs=[runs.am2_control, runs.am2_tropics, runs.am2_extratropics,
                   runs.am2_tropics_and_extratropics],
-    backend=SQLBackend('path')
+    backend=SQLAlchemyDB('path')
 )
 
 # am2_reyoi = Model(
