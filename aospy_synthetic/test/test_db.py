@@ -74,6 +74,14 @@ class SharedDBTests(object):
             expected = 'updated'
             self.assertEqual(actual, expected)
 
+    def test_delete(self):
+        self.db.add(self.AospyObj)
+        self.db.delete(self.AospyObj)
+        with self.db._session_scope() as session:
+            q = session.query(self.db_cls)
+            num_objs = q.filter_by(hash=hash(self.AospyObj)).count()
+            self.assertEqual(num_objs, 0)
+
 
 class TestProjDB(SharedDBTests, unittest.TestCase):
     def setUp(self):

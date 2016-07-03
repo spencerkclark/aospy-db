@@ -60,8 +60,13 @@ class SQLAlchemyDB(AbstractBackend):
                                                                      AospyObj)
             session.add(db_obj)
 
-    def delete():
-        raise
+    def delete(self, AospyObj):
+        """Deletes an aospy object from the database if it exists"""
+        with self._session_scope() as session:
+            q = session.query(self._db_cls_from_aospy_cls(AospyObj))
+            db_obj = q.filter_by(hash=hash(AospyObj)).first()
+            if db_obj:
+                session.delete(db_obj)
 
     def query():
         raise
