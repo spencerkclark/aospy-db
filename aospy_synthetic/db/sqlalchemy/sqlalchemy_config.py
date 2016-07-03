@@ -55,7 +55,15 @@ def _unique(session, cls, hashfunc, queryfunc, constructor, args, kwargs):
 
 class UniqueMixin(object):
 
+    # Maps a non DB object attribute name in the DB object to
+    # an attribute name in the corresponding aospy object
     _metadata_attrs = {}
+
+    # Maps a DB object attribute name in the DB object to
+    # another dictionary, which maps 'db_cls' to the DB object
+    # class associated with the type of the DB object the attribute
+    # points to and maps 'aospy_obj_attr' to the attribute name in the
+    # aospy object associated with the DB object
     _db_attrs = {}
     hash = Column(String)
 
@@ -223,7 +231,8 @@ class CalcDB(UniqueMixin, Base):
         'dtype_out_time': 'dtype_out_time',
         'start_date': 'start_date',
         'end_date': 'end_date',
-        'dtype_in_vert': 'dtype_in_vert'
+        'dtype_in_vert': 'dtype_in_vert',
+        'file_name': 'file_name'
     }
     _db_attrs = {
         'run': {
@@ -257,3 +266,4 @@ class CalcDB(UniqueMixin, Base):
     start_date = Column(DateTime)
     end_date = Column(DateTime)
     dtype_in_vert = Column(String)
+    file_name = Column(String)
