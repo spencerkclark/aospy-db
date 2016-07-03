@@ -13,7 +13,7 @@ def initialize_db(DB_PATH):
     Base.metadata.create_all(engine)
 
 
-def _write_metadata_attrs(db_obj, AospyObj):
+def _set_metadata_attrs(db_obj, AospyObj):
     for key in db_obj._metadata_attrs:
         if hasattr(AospyObj, db_obj._metadata_attrs[key]):
             setattr(
@@ -33,7 +33,7 @@ def _unique(session, cls, hashfunc, queryfunc, constructor, args, kwargs):
 
     # First check to see if the row was added to the session
     if key in cache:
-        _write_metadata_attrs(cache[key], *args)
+        _set_metadata_attrs(cache[key], *args)
         return cache[key]
 
     # Then check if row is already in the DB
@@ -48,7 +48,7 @@ def _unique(session, cls, hashfunc, queryfunc, constructor, args, kwargs):
                 obj = constructor(session, *args, **kwargs)
                 session.add(obj)
             else:
-                _write_metadata_attrs(obj, *args)
+                _set_metadata_attrs(obj, *args)
         cache[key] = obj
     return obj
 
@@ -86,7 +86,7 @@ class UniqueMixin(object):
     def __init__(self, session, AospyObj):
         self.hash = hash(AospyObj)
 
-        _write_metadata_attrs(self, AospyObj)
+        _set_metadata_attrs(self, AospyObj)
 
         for key in self._db_attrs:
             if hasattr(AospyObj, self._db_attrs[key]['aospy_obj_attr']):
