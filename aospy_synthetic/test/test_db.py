@@ -55,7 +55,6 @@ class SharedDBTests(object):
             db_objs = q.filter_by(hash=hash(self.AospyObj)).all()
             self.assertEqual(len(db_objs), 1)
 
-    @unittest.expectedFailure
     def test_update_attr(self):
         self.db.add(self.AospyObj)
         setattr(self.AospyObj, self.ex_str_attr, 'updated')
