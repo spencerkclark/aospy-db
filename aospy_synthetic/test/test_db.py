@@ -1,7 +1,7 @@
 """Test suite for the aospy_synthetic db features."""
 
 import unittest
-from subprocess import call
+import os
 
 from test_objs import (runs, models, projects, variables,
                        regions, calc_objs)
@@ -27,7 +27,10 @@ class SharedDBTests(object):
 
         for attr in db_obj._db_attrs:
             parent_db_obj = getattr(db_obj, attr)
-            parent_aospy_obj = getattr(AospyObj, db_obj._db_attrs[attr]['aospy_obj_attr'])
+            parent_aospy_obj = getattr(
+                AospyObj,
+                db_obj._db_attrs[attr]['aospy_obj_attr']
+            )
             if (parent_db_obj or parent_aospy_obj):
                 # Recursive check will fail if only parent_db_obj or
                 # parent_aospy_obj don't exist (either both need to be present
@@ -35,7 +38,7 @@ class SharedDBTests(object):
                 self.recursive_check_attrs(parent_db_obj, parent_aospy_obj)
 
     def tearDown(self):
-        call(['rm', 'test.db'])
+        os.remove('test.db')
 
     def test_add(self):
         self.db.add(self.AospyObj)
@@ -43,11 +46,6 @@ class SharedDBTests(object):
             q = session.query(self.db_cls)
             db_obj = q.filter_by(hash=hash(self.AospyObj)).first()
             self.recursive_check_attrs(db_obj, self.AospyObj)
-            # for attr in self.db_cls._metadata_attrs:
-            #     actual = getattr(db_obj, attr)
-            #     expected = getattr(self.AospyObj,
-            #                        self.db_cls._metadata_attrs[attr])
-            #     self.assertEqual(actual, expected)
 
     def test_uniqueness_checking(self):
         self.db.add(self.AospyObj)

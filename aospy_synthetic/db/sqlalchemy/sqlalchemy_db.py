@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from contextlib import contextmanager
 
-from aospy_synthetic.db.abstract_db import AbstractBackend
+from ..abstract_db import AbstractBackend
 from sqlalchemy_config import (initialize_db,
                                ProjDB, ModelDB, RunDB,
                                VarDB, CalcDB, RegionDB)
