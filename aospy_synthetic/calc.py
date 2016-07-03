@@ -87,6 +87,8 @@ class CalcInterface(object):
         self.run_str = '_'.join(set(run_names))
         self.run_str_full = '_'.join(run_names)
 
+        self.run = run[0]
+
         self.var = var
         self.name = self.var.name
         self.domain = self.var.domain

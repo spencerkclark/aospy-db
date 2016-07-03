@@ -11,12 +11,28 @@ from aospy_synthetic.db.sqlalchemy.sqlalchemy_config import (ProjDB, ModelDB,
                                                              RegionDB, CalcDB)
 
 
-class TestProjDB(unittest.TestCase):
-    def setUp(self):
-        self.db = SQLAlchemyDB()
-        self.AospyObj = projects.p
-        self.db_cls = ProjDB
-        self.ex_str_attr = 'direc_out'
+class SharedDBTests(object):
+    def recursive_check_attrs(self, db_obj, AospyObj):
+        """Recursively check to make sure all attributes of the
+        object in question and all its parents', grandparents', etc.
+        attributes were all faithfully added to the DB.
+        """
+        for attr in db_obj._metadata_attrs:
+            actual = getattr(db_obj, attr)
+            expected = getattr(
+                AospyObj,
+                db_obj._metadata_attrs[attr]
+            )
+            self.assertEqual(actual, expected)
+
+        for attr in db_obj._db_attrs:
+            parent_db_obj = getattr(db_obj, attr)
+            parent_aospy_obj = getattr(AospyObj, db_obj._db_attrs[attr]['obj'])
+            if (parent_db_obj or parent_aospy_obj):
+                # Recursive check will fail if only parent_db_obj or
+                # parent_aospy_obj don't exist (either both need to be present
+                # or neither need to be present).
+                self.recursive_check_attrs(parent_db_obj, parent_aospy_obj)
 
     def tearDown(self):
         call(['rm', 'test.db'])
@@ -26,12 +42,12 @@ class TestProjDB(unittest.TestCase):
         with self.db._session_scope() as session:
             q = session.query(self.db_cls)
             db_obj = q.filter_by(hash=hash(self.AospyObj)).first()
-
-            for attr in self.db_cls._metadata_attrs:
-                actual = getattr(db_obj, attr)
-                expected = getattr(self.AospyObj,
-                                   self.db_cls._metadata_attrs[attr])
-                self.assertEqual(actual, expected)
+            self.recursive_check_attrs(db_obj, self.AospyObj)
+            # for attr in self.db_cls._metadata_attrs:
+            #     actual = getattr(db_obj, attr)
+            #     expected = getattr(self.AospyObj,
+            #                        self.db_cls._metadata_attrs[attr])
+            #     self.assertEqual(actual, expected)
 
     def test_uniqueness_checking(self):
         self.db.add(self.AospyObj)
@@ -57,7 +73,15 @@ class TestProjDB(unittest.TestCase):
             self.assertEqual(actual, expected)
 
 
-class TestModelDB(TestProjDB):
+class TestProjDB(SharedDBTests, unittest.TestCase):
+    def setUp(self):
+        self.db = SQLAlchemyDB()
+        self.AospyObj = projects.p
+        self.db_cls = ProjDB
+        self.ex_str_attr = 'direc_out'
+
+
+class TestModelDB(SharedDBTests, unittest.TestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
         self.AospyObj = models.m
@@ -65,7 +89,7 @@ class TestModelDB(TestProjDB):
         self.ex_str_attr = 'description'
 
 
-class TestRunDB(TestProjDB):
+class TestRunDB(SharedDBTests, unittest.TestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
         self.AospyObj = runs.r
@@ -73,7 +97,7 @@ class TestRunDB(TestProjDB):
         self.ex_str_attr = 'description'
 
 
-class TestVarDB(TestProjDB):
+class TestVarDB(SharedDBTests, unittest.TestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
         self.AospyObj = variables.mse
@@ -81,7 +105,7 @@ class TestVarDB(TestProjDB):
         self.ex_str_attr = 'description'
 
 
-class TestRegDB(TestProjDB):
+class TestRegDB(SharedDBTests, unittest.TestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
         self.AospyObj = regions.nh
@@ -89,7 +113,7 @@ class TestRegDB(TestProjDB):
         self.ex_str_attr = 'description'
 
 
-class TestCalcDB(TestProjDB):
+class TestCalcDB(SharedDBTests, unittest.TestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
         self.AospyObj = calc_objs.c

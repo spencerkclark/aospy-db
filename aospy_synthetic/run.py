@@ -29,6 +29,7 @@ class Run(object):
         self.description = description
         self.proj = proj
 
+        self.model = None
         self._parent = None
 
         self.data_in_dur = data_in_dur

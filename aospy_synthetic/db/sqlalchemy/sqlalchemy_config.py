@@ -41,8 +41,6 @@ def _unique(session, cls, hashfunc, queryfunc, constructor, args, kwargs):
 
 class UniqueMixin(object):
 
-    _parent_cls = None
-    _parent_attr = None
     _metadata_attrs = {}
     _db_attrs = {}
     hash = Column(String)
@@ -67,19 +65,13 @@ class UniqueMixin(object):
             kwargs
         )
 
-    @classmethod
-    def _get_parent(cls, session, AospyObj):
-        return cls._parent_cls.as_unique(session, AospyObj._parent)
-
     @staticmethod
     def _get_db_obj(db_cls, session, AospyObj):
         return db_cls.as_unique(session, AospyObj)
 
     def __init__(self, session, AospyObj):
         self.hash = hash(AospyObj)
-        if self._parent_cls:
-            setattr(self, self._parent_attr, self._get_parent(session,
-                                                              AospyObj))
+
         for key in self._metadata_attrs:
             if hasattr(AospyObj, self._metadata_attrs[key]):
                 setattr(self, key, getattr(AospyObj,
@@ -124,11 +116,15 @@ class ProjDB(UniqueMixin, Base):
 
 class ModelDB(UniqueMixin, Base):
     __tablename__ = 'models'
-    _parent_cls = ProjDB
-    _parent_attr = 'project'
     _metadata_attrs = {
         'name': 'name',
         'description': 'description'
+    }
+    _db_attrs = {
+        'project': {
+            'db_cls': ProjDB,
+            'obj': 'project'
+        }
     }
 
     id = Column(Integer, primary_key=True)
@@ -144,8 +140,6 @@ class ModelDB(UniqueMixin, Base):
 
 class RunDB(UniqueMixin, Base):
     __tablename__ = 'runs'
-    _parent_cls = ModelDB
-    _parent_attr = 'model'
     _metadata_attrs = {
         'name': 'name',
         'description': 'description',
@@ -153,6 +147,12 @@ class RunDB(UniqueMixin, Base):
         'data_in_end_date': 'data_in_end_date',
         'data_in_dur': 'data_in_dur',
         'data_in_direc': 'data_in_direc'
+    }
+    _db_attrs = {
+        'model': {
+            'db_cls': ModelDB,
+            'obj': 'model'
+        }
     }
 
     id = Column(Integer, primary_key=True)
@@ -203,8 +203,6 @@ class RegionDB(UniqueMixin, Base):
 
 class CalcDB(UniqueMixin, Base):
     __tablename__ = 'calcs'
-    _parent_cls = RunDB
-    _parent_attr = 'run'
     _metadata_attrs = {
         'intvl_in': 'intvl_in',
         'intvl_out': 'intvl_out',
@@ -214,11 +212,15 @@ class CalcDB(UniqueMixin, Base):
         'dtype_in_vert': 'dtype_in_vert'
     }
     _db_attrs = {
+        'run': {
+            'db_cls': RunDB,
+            'obj': 'run'
+        },
         'var': {
             'db_cls': VarDB,
             'obj': 'var'
         },
-        'reg': {
+        'region': {
             'db_cls': RegionDB,
             'obj': 'region'
         }

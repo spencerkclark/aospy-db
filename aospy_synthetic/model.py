@@ -38,10 +38,11 @@ class Model(object):
 
         self.runs = dict_name_keys(runs)
 
+        self.project = None
         self._parent = None
-
         if runs:
             for run in runs:
+                run.model = self
                 run._parent = self
 
         [setattr(run, 'parent', self) for run in self.runs.values()]
