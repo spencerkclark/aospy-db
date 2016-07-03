@@ -17,17 +17,17 @@ class SharedDBTests(object):
         object in question and all its parents', grandparents', etc.
         attributes were all faithfully added to the DB.
         """
-        for attr in db_obj._metadata_attrs:
+        for attr, aospy_obj_attr in db_obj._metadata_attrs.iteritems():
             actual = getattr(db_obj, attr)
             expected = getattr(
                 AospyObj,
-                db_obj._metadata_attrs[attr]
+                aospy_obj_attr
             )
             self.assertEqual(actual, expected)
 
         for attr in db_obj._db_attrs:
             parent_db_obj = getattr(db_obj, attr)
-            parent_aospy_obj = getattr(AospyObj, db_obj._db_attrs[attr]['obj'])
+            parent_aospy_obj = getattr(AospyObj, db_obj._db_attrs[attr]['aospy_obj_attr'])
             if (parent_db_obj or parent_aospy_obj):
                 # Recursive check will fail if only parent_db_obj or
                 # parent_aospy_obj don't exist (either both need to be present

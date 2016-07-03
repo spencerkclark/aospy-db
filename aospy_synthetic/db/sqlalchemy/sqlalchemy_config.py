@@ -78,8 +78,11 @@ class UniqueMixin(object):
                                            self._metadata_attrs[key]))
 
         for key in self._db_attrs:
-            if hasattr(AospyObj, self._db_attrs[key]['obj']):
-                sub_obj = getattr(AospyObj, self._db_attrs[key]['obj'])
+            if hasattr(AospyObj, self._db_attrs[key]['aospy_obj_attr']):
+                sub_obj = getattr(
+                    AospyObj,
+                    self._db_attrs[key]['aospy_obj_attr']
+                )
                 if sub_obj:
                     setattr(
                         self, key,
@@ -94,7 +97,7 @@ class UniqueMixin(object):
         repr = ''
         for attr in self.__class__._metadata_attrs:
             repr += '{}: {}\n'.format(attr, getattr(self, attr))
-            return repr
+        return repr
 
     def __str__(self):
         return self.__repr__()
@@ -123,7 +126,7 @@ class ModelDB(UniqueMixin, Base):
     _db_attrs = {
         'project': {
             'db_cls': ProjDB,
-            'obj': 'project'
+            'aospy_obj_attr': 'project'
         }
     }
 
@@ -151,7 +154,7 @@ class RunDB(UniqueMixin, Base):
     _db_attrs = {
         'model': {
             'db_cls': ModelDB,
-            'obj': 'model'
+            'aospy_obj_attr': 'model'
         }
     }
 
@@ -214,15 +217,15 @@ class CalcDB(UniqueMixin, Base):
     _db_attrs = {
         'run': {
             'db_cls': RunDB,
-            'obj': 'run'
+            'aospy_obj_attr': 'run'
         },
         'var': {
             'db_cls': VarDB,
-            'obj': 'var'
+            'aospy_obj_attr': 'var'
         },
         'region': {
             'db_cls': RegionDB,
-            'obj': 'region'
+            'aospy_obj_attr': 'region'
         }
     }
 
