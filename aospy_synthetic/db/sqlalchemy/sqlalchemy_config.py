@@ -129,7 +129,11 @@ class ProjDB(UniqueMixin, Base):
         'direc_out': 'direc_out'
     }
     id = Column(Integer, primary_key=True)
-    models = relationship('ModelDB', back_populates='project')
+    models = relationship(
+        'ModelDB',
+        back_populates='project',
+        cascade='delete'
+    )
 
     # _metadata_attrs
     name = Column(String)
@@ -153,7 +157,11 @@ class ModelDB(UniqueMixin, Base):
     project_id = Column(Integer, ForeignKey('projects.id'))
     project = relationship('ProjDB', back_populates='models')
 
-    runs = relationship('RunDB', back_populates='model')
+    runs = relationship(
+        'RunDB',
+        back_populates='model',
+        cascade='delete'
+    )
 
     # _metadata_attrs
     name = Column(String)
@@ -181,7 +189,11 @@ class RunDB(UniqueMixin, Base):
     model_id = Column(Integer, ForeignKey('models.id'))
     model = relationship('ModelDB', back_populates='runs')
 
-    calcs = relationship('CalcDB', back_populates='run')
+    calcs = relationship(
+        'CalcDB',
+        back_populates='run',
+        cascade='delete'
+    )
 
     # _metadata_attrs
     name = Column(String)
@@ -199,7 +211,11 @@ class VarDB(UniqueMixin, Base):
         'description': 'description',
     }
     id = Column(Integer, primary_key=True)
-    calcs = relationship('CalcDB', back_populates='var')
+    calcs = relationship(
+        'CalcDB',
+        back_populates='var',
+        cascade='delete'
+    )
 
     # _metadata_attrs
     name = Column(String)
@@ -216,7 +232,11 @@ class RegionDB(UniqueMixin, Base):
         'description': 'description'
     }
     id = Column(Integer, primary_key=True)
-    calcs = relationship('CalcDB', back_populates='region')
+    calcs = relationship(
+        'CalcDB',
+        back_populates='region',
+        cascade='delete'
+    )
 
     # _metadata_attrs
     name = Column(String)

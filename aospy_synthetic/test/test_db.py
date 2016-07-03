@@ -131,5 +131,26 @@ class TestCalcDB(SharedDBTests, unittest.TestCase):
         self.ex_str_attr = 'dtype_out_time'
 
 
+class TestDeleteCascade(unittest.TestCase):
+    def setUp(self):
+        self.db = SQLAlchemyDB()
+        self.proj = projects.p
+        self.model = models.m
+        self.run = runs.r
+        self.calc = calc_objs.c
+
+    def test_delete_parent(self):
+        self.db.add(self.calc)
+        self.db.delete(self.run)
+        with self.db._session_scope() as session:
+            q = session.query(CalcDB)
+            num_objs = q.filter_by(hash=hash(self.calc)).count()
+            self.assertEqual(num_objs, 0)
+
+            q = session.query(RunDB)
+            num_objs = q.filter_by(hash=hash(self.run)).count()
+            self.assertEqual(num_objs, 0)
+
+
 if __name__ == '__main__':
     unittest.main()
