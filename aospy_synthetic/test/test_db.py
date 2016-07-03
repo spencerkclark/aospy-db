@@ -16,11 +16,7 @@ class SharedDBTests(object):
         num_objs = query_obj.filter_by(hash=hash(self.AospyObj)).count()
         self.assertEqual(num_objs, 1)
 
-    def recursive_check_attrs(self, db_obj, AospyObj):
-        """Recursively check to make sure all attributes of the
-        object in question and all its parents', grandparents', etc.
-        attributes were all faithfully added to the DB.
-        """
+    def assertEqualMetadataAttrs(self, db_obj, AospyObj):
         for attr, aospy_obj_attr in db_obj._metadata_attrs.iteritems():
             actual = getattr(db_obj, attr)
             expected = getattr(
@@ -28,6 +24,13 @@ class SharedDBTests(object):
                 aospy_obj_attr
             )
             self.assertEqual(actual, expected)
+
+    def assertEqualAttrsRecursive(self, db_obj, AospyObj):
+        """Recursively check to make sure all attributes of the
+        object in question and all its parents', grandparents', etc.
+        attributes were all faithfully added to the DB.
+        """
+        self.assertEqualMetadataAttrs(db_obj, AospyObj)
 
         for attr in db_obj._db_attrs:
             parent_db_obj = getattr(db_obj, attr)
@@ -39,7 +42,7 @@ class SharedDBTests(object):
                 # Recursive check will fail if only parent_db_obj or
                 # parent_aospy_obj don't exist (either both need to be present
                 # or neither need to be present).
-                self.recursive_check_attrs(parent_db_obj, parent_aospy_obj)
+                self.assertEqualAttrsRecursive(parent_db_obj, parent_aospy_obj)
 
     def tearDown(self):
         os.remove('test.db')
@@ -49,7 +52,7 @@ class SharedDBTests(object):
         with self.db._session_scope() as session:
             q = session.query(self.db_cls)
             db_obj = q.filter_by(hash=hash(self.AospyObj)).first()
-            self.recursive_check_attrs(db_obj, self.AospyObj)
+            self.assertEqualAttrsRecursive(db_obj, self.AospyObj)
 
     def test_uniqueness_checking(self):
         self.db.add(self.AospyObj)
