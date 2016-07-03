@@ -12,6 +12,10 @@ from aospy_synthetic.db.sqlalchemy.sqlalchemy_config import (ProjDB, ModelDB,
 
 
 class SharedDBTests(object):
+    def assertNoDuplicates(self, query_obj, AospyObj):
+        num_objs = query_obj.filter_by(hash=hash(self.AospyObj)).count()
+        self.assertEqual(num_objs, 1)
+
     def recursive_check_attrs(self, db_obj, AospyObj):
         """Recursively check to make sure all attributes of the
         object in question and all its parents', grandparents', etc.
@@ -49,11 +53,10 @@ class SharedDBTests(object):
 
     def test_uniqueness_checking(self):
         self.db.add(self.AospyObj)
-        self.db.add(self.AospyObj)  # Call add on a duplicate object
+        self.db.add(self.AospyObj)
         with self.db._session_scope() as session:
             q = session.query(self.db_cls)
-            db_objs = q.filter_by(hash=hash(self.AospyObj)).all()
-            self.assertEqual(len(db_objs), 1)
+            self.assertNoDuplicates(q, self.AospyObj)
 
     def test_update_attr(self):
         self.db.add(self.AospyObj)
@@ -61,10 +64,9 @@ class SharedDBTests(object):
         self.db.add(self.AospyObj)
         with self.db._session_scope() as session:
             q = session.query(self.db_cls)
-            db_objs = q.filter_by(hash=hash(self.AospyObj)).all()
-            self.assertEqual(len(db_objs), 1)  # No duplicates
+            self.assertNoDuplicates(q, self.AospyObj)
 
-            db_obj = db_objs[0]
+            db_obj = q.filter_by(hash=hash(self.AospyObj)).first()
             actual = getattr(db_obj, self.ex_str_attr)
             expected = 'updated'
             self.assertEqual(actual, expected)
