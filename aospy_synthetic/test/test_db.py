@@ -135,9 +135,10 @@ class TestDeleteCascade(unittest.TestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
         self.proj = projects.p
-        self.model = models.m
-        self.run = runs.r
         self.calc = calc_objs.c
+
+    def tearDown(self):
+        os.remove('test.db')
 
     def test_delete_parent(self):
         self.db.add(self.calc)
