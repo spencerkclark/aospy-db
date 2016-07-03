@@ -141,15 +141,27 @@ class TestDeleteCascade(unittest.TestCase):
 
     def test_delete_parent(self):
         self.db.add(self.calc)
-        self.db.delete(self.run)
+        self.db.delete(self.proj)
         with self.db._session_scope() as session:
             q = session.query(CalcDB)
             num_objs = q.filter_by(hash=hash(self.calc)).count()
             self.assertEqual(num_objs, 0)
 
-            q = session.query(RunDB)
-            num_objs = q.filter_by(hash=hash(self.run)).count()
+            q = session.query(ProjDB)
+            num_objs = q.filter_by(hash=hash(self.proj)).count()
             self.assertEqual(num_objs, 0)
+
+    def test_delete_child(self):
+        self.db.add(self.calc)
+        self.db.delete(self.calc)
+        with self.db._session_scope() as session:
+            q = session.query(CalcDB)
+            num_objs = q.filter_by(hash=hash(self.calc)).count()
+            self.assertEqual(num_objs, 0)
+
+            q = session.query(ProjDB)
+            num_objs = q.filter_by(hash=hash(self.proj)).count()
+            self.assertEqual(num_objs, 1)
 
 
 if __name__ == '__main__':
