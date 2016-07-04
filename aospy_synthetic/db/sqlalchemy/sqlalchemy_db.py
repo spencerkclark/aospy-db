@@ -69,4 +69,68 @@ class SQLAlchemyDB(AbstractBackend):
                 session.delete(db_obj)
 
     def query():
-        raise
+        raise NotImplementedError()
+
+    # Define hidden testing methods
+    def _assertNoDuplicates(self, AospyObj):
+        with self._session_scope() as session:
+            db_cls = self._db_cls_from_aospy_cls(AospyObj)
+            q = session.query(db_cls)
+            num_objs = q.filter_by(hash=hash(AospyObj)).count()
+            assert num_objs == 1
+
+    def _assertNotInDB(self, AospyObj):
+        with self._session_scope() as session:
+            db_cls = self._db_cls_from_aospy_cls(AospyObj)
+            q = session.query(db_cls)
+            num_objs = q.filter_by(hash=hash(AospyObj)).count()
+            assert num_objs == 0
+
+    def _assertDBAttrMatches(self, AospyObj, attr):
+        with self._session_scope() as session:
+            db_cls = self._db_cls_from_aospy_cls(AospyObj)
+            q = session.query(db_cls)
+            db_obj = q.filter_by(hash=hash(AospyObj)).first()
+            self._checkAttrMatches(db_obj, AospyObj, attr)
+
+    @staticmethod
+    def _checkAttrMatches(db_obj, AospyObj, attr):
+        actual = getattr(db_obj, attr)
+        expected = getattr(AospyObj, db_obj._metadata_attrs[attr])
+        assert actual == expected
+
+    @classmethod
+    def _checkAllMetadataAttrsMatch(cls, db_obj, AospyObj):
+        for attr in db_obj._metadata_attrs:
+            cls._checkAttrMatches(db_obj, AospyObj, attr)
+
+    @classmethod
+    def _checkAllDBAttrsMatchRecursive(cls, db_obj, AospyObj):
+        cls._checkAllMetadataAttrsMatch(db_obj, AospyObj)
+        for attr in db_obj._db_attrs:
+            parent_db_obj = getattr(db_obj, attr)
+            parent_aospy_obj = getattr(
+                AospyObj,
+                db_obj._db_attrs[attr]['aospy_obj_attr']
+            )
+            if (parent_db_obj or parent_aospy_obj):
+                # Recursive check will fail if only parent_db_obj or
+                # parent_aospy_obj don't exist (either both need to be present
+                # or neither need to be present).  If neither are present
+                # recursion ends; if both are present recursion continues.
+                # If one is present, getattr throws and error.
+                cls._checkAllDBAttrsMatchRecursive(
+                    parent_db_obj,
+                    parent_aospy_obj
+                )
+
+    def _assertEqualAttrsRecursive(self, AospyObj):
+        """Recursively check to make sure all attributes of the
+        object in question and all its parents', grandparents', etc.
+        attributes were all faithfully added to the DB.
+        """
+        with self._session_scope() as session:
+            db_cls = self._db_cls_from_aospy_cls(AospyObj)
+            q = session.query(db_cls)
+            db_obj = q.filter_by(hash=hash(AospyObj)).first()
+            self._checkAllDBAttrsMatchRecursive(db_obj, AospyObj)

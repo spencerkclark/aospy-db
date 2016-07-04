@@ -12,75 +12,35 @@ from aospy_synthetic.db.sqlalchemy.sqlalchemy_config import (ProjDB, ModelDB,
 
 
 class SharedDBTests(object):
-    def assertNoDuplicates(self, query_obj, AospyObj):
-        num_objs = query_obj.filter_by(hash=hash(self.AospyObj)).count()
-        self.assertEqual(num_objs, 1)
-
-    def assertEqualMetadataAttrs(self, db_obj, AospyObj):
-        for attr, aospy_obj_attr in db_obj._metadata_attrs.iteritems():
-            actual = getattr(db_obj, attr)
-            expected = getattr(
-                AospyObj,
-                aospy_obj_attr
-            )
-            self.assertEqual(actual, expected)
-
-    def assertEqualAttrsRecursive(self, db_obj, AospyObj):
-        """Recursively check to make sure all attributes of the
-        object in question and all its parents', grandparents', etc.
-        attributes were all faithfully added to the DB.
-        """
-        self.assertEqualMetadataAttrs(db_obj, AospyObj)
-
-        for attr in db_obj._db_attrs:
-            parent_db_obj = getattr(db_obj, attr)
-            parent_aospy_obj = getattr(
-                AospyObj,
-                db_obj._db_attrs[attr]['aospy_obj_attr']
-            )
-            if (parent_db_obj or parent_aospy_obj):
-                # Recursive check will fail if only parent_db_obj or
-                # parent_aospy_obj don't exist (either both need to be present
-                # or neither need to be present).
-                self.assertEqualAttrsRecursive(parent_db_obj, parent_aospy_obj)
+    def setUp(self):
+        raise NotImplementedError
 
     def tearDown(self):
         os.remove('test.db')
 
     def test_add(self):
         self.db.add(self.AospyObj)
-        with self.db._session_scope() as session:
-            q = session.query(self.db_cls)
-            db_obj = q.filter_by(hash=hash(self.AospyObj)).first()
-            self.assertEqualAttrsRecursive(db_obj, self.AospyObj)
+        self.db._assertEqualAttrsRecursive(self.AospyObj)
 
     def test_uniqueness_checking(self):
         self.db.add(self.AospyObj)
         self.db.add(self.AospyObj)
-        with self.db._session_scope() as session:
-            q = session.query(self.db_cls)
-            self.assertNoDuplicates(q, self.AospyObj)
+
+        self.db._assertNoDuplicates(self.AospyObj)
 
     def test_update_attr(self):
         self.db.add(self.AospyObj)
         setattr(self.AospyObj, self.ex_str_attr, 'updated')
         self.db.add(self.AospyObj)
-        with self.db._session_scope() as session:
-            q = session.query(self.db_cls)
-            self.assertNoDuplicates(q, self.AospyObj)
 
-            db_obj = q.filter_by(hash=hash(self.AospyObj)).first()
-            actual = getattr(db_obj, self.ex_str_attr)
-            expected = 'updated'
-            self.assertEqual(actual, expected)
+        self.db._assertNoDuplicates(self.AospyObj)
+        self.db._assertDBAttrMatches(self.AospyObj, self.ex_str_attr)
 
     def test_delete(self):
         self.db.add(self.AospyObj)
         self.db.delete(self.AospyObj)
-        with self.db._session_scope() as session:
-            q = session.query(self.db_cls)
-            num_objs = q.filter_by(hash=hash(self.AospyObj)).count()
-            self.assertEqual(num_objs, 0)
+
+        self.db._assertNotInDB(self.AospyObj)
 
 
 class TestProjDB(SharedDBTests, unittest.TestCase):
@@ -135,6 +95,8 @@ class TestDeleteCascade(unittest.TestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
         self.proj = projects.p
+        self.model = models.m
+        self.run = runs.r
         self.calc = calc_objs.c
 
     def tearDown(self):
@@ -143,26 +105,20 @@ class TestDeleteCascade(unittest.TestCase):
     def test_delete_parent(self):
         self.db.add(self.calc)
         self.db.delete(self.proj)
-        with self.db._session_scope() as session:
-            q = session.query(CalcDB)
-            num_objs = q.filter_by(hash=hash(self.calc)).count()
-            self.assertEqual(num_objs, 0)
 
-            q = session.query(ProjDB)
-            num_objs = q.filter_by(hash=hash(self.proj)).count()
-            self.assertEqual(num_objs, 0)
+        self.db._assertNotInDB(self.calc)
+        self.db._assertNotInDB(self.run)
+        self.db._assertNotInDB(self.model)
+        self.db._assertNotInDB(self.proj)
 
     def test_delete_child(self):
         self.db.add(self.calc)
         self.db.delete(self.calc)
-        with self.db._session_scope() as session:
-            q = session.query(CalcDB)
-            num_objs = q.filter_by(hash=hash(self.calc)).count()
-            self.assertEqual(num_objs, 0)
 
-            q = session.query(ProjDB)
-            num_objs = q.filter_by(hash=hash(self.proj)).count()
-            self.assertEqual(num_objs, 1)
+        self.db._assertNotInDB(self.calc)
+        self.db._assertNoDuplicates(self.run)
+        self.db._assertNoDuplicates(self.model)
+        self.db._assertNoDuplicates(self.proj)
 
 
 class TestDBTrackingToggle(unittest.TestCase):
