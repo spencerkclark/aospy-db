@@ -91,28 +91,35 @@ class TestDeleteCascade(unittest.TestCase):
         self.proj = self.model.proj
         self.var = self.calc.var
 
+        self.db.add(self.calc)
+
     def tearDown(self):
         os.remove('test.db')
 
     def test_delete_proj(self):
-        self.db.add(self.calc)
         self.db.delete(self.proj)
-
-        self.db._assertNotInDB(self.calc)
-        self.db._assertNotInDB(self.run)
-        self.db._assertNotInDB(self.model)
-        self.db._assertNotInDB(self.proj)
+        self.db._assertNotInDB(self.calc, self.run, self.model, self.proj)
         self.db._assertNoDuplicates(self.var)
+
+    def test_delete_model(self):
+        self.db.delete(self.model)
+        self.db._assertNotInDB(self.calc, self.run, self.model)
+        self.db._assertNoDuplicates(self.var, self.proj)
+
+    def test_delete_run(self):
+        self.db.delete(self.run)
+        self.db._assertNotInDB(self.calc, self.run)
+        self.db._assertNoDuplicates(self.var, self.proj, self.model)
 
     def test_delete_calc(self):
-        self.db.add(self.calc)
         self.db.delete(self.calc)
-
         self.db._assertNotInDB(self.calc)
-        self.db._assertNoDuplicates(self.run)
-        self.db._assertNoDuplicates(self.model)
-        self.db._assertNoDuplicates(self.proj)
-        self.db._assertNoDuplicates(self.var)
+        self.db._assertNoDuplicates(self.run, self.model, self.proj, self.var)
+
+    def test_delete_var(self):
+        self.db.delete(self.var)
+        self.db._assertNotInDB(self.calc, self.var)
+        self.db._assertNoDuplicates(self.run, self.model, self.proj)
 
 
 class TestDBTrackingToggle(unittest.TestCase):
