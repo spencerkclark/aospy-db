@@ -47,7 +47,6 @@ class TestProjDB(SharedDBTests, unittest.TestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
         self.AospyObj = projects.p
-        self.db_cls = ProjDB
         self.ex_str_attr = 'direc_out'
 
 
@@ -55,7 +54,6 @@ class TestModelDB(SharedDBTests, unittest.TestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
         self.AospyObj = models.m
-        self.db_cls = ModelDB
         self.ex_str_attr = 'description'
 
 
@@ -63,7 +61,6 @@ class TestRunDB(SharedDBTests, unittest.TestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
         self.AospyObj = runs.r
-        self.db_cls = RunDB
         self.ex_str_attr = 'description'
 
 
@@ -71,7 +68,6 @@ class TestVarDB(SharedDBTests, unittest.TestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
         self.AospyObj = variables.mse
-        self.db_cls = VarDB
         self.ex_str_attr = 'description'
 
 
@@ -79,7 +75,6 @@ class TestRegDB(SharedDBTests, unittest.TestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
         self.AospyObj = regions.nh
-        self.db_cls = RegionDB
         self.ex_str_attr = 'description'
 
 
@@ -87,17 +82,16 @@ class TestCalcDB(SharedDBTests, unittest.TestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
         self.AospyObj = calc_objs.c
-        self.db_cls = CalcDB
         self.ex_str_attr = 'dtype_out_time'
 
 
 class TestDeleteCascade(unittest.TestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
-        self.proj = projects.p
-        self.model = models.m
-        self.run = runs.r
         self.calc = calc_objs.c
+        self.run = self.calc.run
+        self.model = self.run.model
+        self.proj = self.model.proj
 
     def tearDown(self):
         os.remove('test.db')
@@ -134,10 +128,8 @@ class TestDBTrackingToggle(unittest.TestCase):
     def test_dont_track(self):
         self.proj.db_tracking = False
         self.db.add(self.proj)
-        with self.db._session_scope() as session:
-            q = session.query(ProjDB)
-            num_objs = q.filter_by(hash=hash(self.proj)).count()
-            self.assertEqual(num_objs, 0)
+
+        self.db._assertNotInDB(self.proj)
 
 if __name__ == '__main__':
     unittest.main()
