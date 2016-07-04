@@ -3,34 +3,9 @@ from __future__ import print_function
 import os
 import time
 
-from .var import Var
 from .io import _data_in_label, _data_out_label, _ens_label, _yr_label
 from .timedate import TimeManager
 from .utils import get_parent_attr
-
-
-dp = Var(
-    name='dp',
-    units='Pa',
-    domain='atmos',
-    description='Pressure thickness of model levels.',
-    def_time=True,
-    def_vert=True,
-    def_lat=True,
-    def_lon=True,
-    in_nc_grid=False,
-)
-ps = Var(
-    name='ps',
-    units='Pa',
-    domain='atmos',
-    description='Surface pressure.',
-    def_time=True,
-    def_vert=False,
-    def_lat=True,
-    def_lon=True,
-    in_nc_grid=False
-)
 
 
 class CalcInterface(object):
@@ -46,8 +21,7 @@ class CalcInterface(object):
                      'ens_mem_prefix',
                      'ens_mem_ext',
                      'idealized'):
-            attr_val = tuple([get_parent_attr(rn, attr, strict=False)
-                              for rn in self.run])
+            attr_val = tuple([get_parent_attr(self.run, attr, strict=False)])
             setattr(self, attr, attr_val)
 
     def __init__(self, proj=None, model=None, run=None, ens_mem=None, var=None,
@@ -59,35 +33,20 @@ class CalcInterface(object):
         if run not in model.runs.values():
             raise AttributeError("Model '{}' has no run '{}'.  Calc object "
                                  "will not be generated.".format(model, run))
-        # 2015-10-13 S. Hill: This tuple-izing is for support of calculations
-        # where variables come from different runs.  However, this is a very
-        # fragile way of implementing that functionality.  Eventually it will
-        # be replaced with something better.
-        proj = tuple([proj])
-        model = tuple([model])
-        if not isinstance(run, (list, tuple)):
-            run = tuple([run])
-        # Make tuples the same length.
-        if len(proj) == 1 and (len(model) > 1 or len(run) > 1):
-            proj = tuple(list(proj)*len(run))
-        if len(model) == 1 and len(run) > 1:
-            model = tuple(list(model)*len(run))
 
         self.proj = proj
         self.model = model
         self.run = run
 
-        self._parent = run[0]
+        self._parent = run
 
         self._set_data_in_attrs()
 
-        self.proj_str = '_'.join(set([p.name for p in self.proj]))
-        self.model_str = '_'.join(set([m.name for m in self.model]))
-        run_names = [r.name for r in self.run]
-        self.run_str = '_'.join(set(run_names))
-        self.run_str_full = '_'.join(run_names)
+        self.proj_str = str(proj)
+        self.model_str = str(model)
 
-        self.run = run[0]
+        self.run_str = run.name
+        self.run_str_full = run.name
 
         self.var = var
         self.name = self.var.name
@@ -111,7 +70,6 @@ class CalcInterface(object):
         self.intvl_out = intvl_out
         self.dtype_in_time = dtype_in_time
         self.dtype_in_vert = dtype_in_vert
-        self.ps = ps
 
         # For now we'll change to make Calc one to one -- testing already works
         # this way.  (It doesn't use the CalcInterface -- CalcInterface may be
@@ -155,8 +113,6 @@ class Calc(object):
             )
         else:
             return all([self.run.track(), self.var.track(), self.db_tracking])
-
-    ARR_XRAY_NAME = 'aospy_result'
 
     def __str__(self):
         """String representation of the object."""
@@ -215,8 +171,6 @@ class Calc(object):
         self.__dict__ = vars(calc_interface)
         self._print_verbose('Initializing Calc instance:', self.__str__())
 
-        #[mod.set_grid_data() for mod in self.model]
-
         if isinstance(calc_interface.ens_mem, int):
             self.data_in_direc = self.data_in_direc[calc_interface.ens_mem]
 
@@ -229,83 +183,3 @@ class Calc(object):
         self.path_archive = self._path_archive()
 
         self.data_out = {}
-
-        # Add rows to database.
-#        if (self.backend is not None) and (self.db_on):
- #           self.backend.add(self)
-
-    def compute(self):
-        """Perform all desired calculations on the data and save externally."""
-        # Load the input data from disk.
-        data_in = None
-        # Compute only the needed timeseries.
-        self._print_verbose('\n', 'Computing desired timeseries for '
-                            '{} -- {}.'.format(self.start_date, self.end_date))
-        bool_monthly = (['monthly_from' in self.dtype_in_time,
-                         'time-mean' in self.dtype_out_time])
-        bool_eddy = 'eddy' in self.dtype_out_time
-        if not all(bool_monthly):
-            full_ts, full_dt = (1, 1)
-        else:
-            full_ts = False
-        if bool_eddy or bool_monthly:
-            monthly_ts, monthly_dt = (1, 1)
-        else:
-            monthly_ts = False
-        if bool_eddy:
-            eddy_ts = 1
-        else:
-            eddy_ts = False
-
-        # Average within each year.
-        if not bool_monthly:
-            full_ts = 1
-        if bool_monthly:
-            monthly_ts = 1
-        if bool_eddy:
-            eddy_ts = 1
-        # Apply time reduction methods.
-        if self.def_time:
-            self._print_verbose("Applying desired time-reduction methods.")
-            # Determine which are regional, eddy, time-mean.
-            specs = self.dtype_out_time.split('.')
-            reduced = {}
-            reduc = self.dtype_out_time
-
-            if 'eddy' in specs:
-                data = eddy_ts
-            elif 'time-mean' in specs:
-                data = monthly_ts
-            else:
-                data = full_ts
-            if 'reg' in specs:
-                reduced.update({reduc: 1})
-            else:
-                reduced.update({reduc: 1})
-        else:
-            reduced = {'': full_ts}
-
-        # Save to disk.
-        self._print_verbose("Writing desired gridded outputs to disk.")
-        for dtype_time, data in reduced.items():
-            self.save(data, dtype_time, dtype_out_vert=self.dtype_out_vert)
-
-    def _save_to_scratch(self, data, dtype_out_time):
-        """Save the data to the scratch filesystem."""
-        path = self.path_scratch
-        ##### SKC ADD TO DATABASE HERE #####
-
-    def _update_data_out(self, data, dtype):
-        """Append the data of the given dtype_out to the data_out attr."""
-        try:
-            self.data_out.update({dtype: data})
-        except AttributeError:
-            self.data_out = {dtype: data}
-
-    def save(self, data, dtype_out_time, dtype_out_vert=False,
-             scratch=True, archive=False):
-        """Save aospy data to data_out attr and to an external file."""
-        self._update_data_out(data, dtype_out_time)
-        if scratch:
-            self._save_to_scratch(data, dtype_out_time)
-        print('\t', '{}'.format(self.path_scratch))
