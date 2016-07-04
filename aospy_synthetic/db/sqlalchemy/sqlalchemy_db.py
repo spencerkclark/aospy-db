@@ -41,8 +41,8 @@ class SQLAlchemyDB(AbstractBackend):
         finally:
             session.close()
 
-    @classmethod
-    def _db_cls_from_aospy_cls(cls, AospyObj):
+    @staticmethod
+    def _db_cls_from_aospy_cls(AospyObj):
         mapping = {
             'Proj': ProjDB,
             'Model': ModelDB,
