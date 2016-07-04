@@ -41,7 +41,8 @@ class SQLAlchemyDB(AbstractBackend):
         finally:
             session.close()
 
-    def _db_cls_from_aospy_cls(self, AospyObj):
+    @classmethod
+    def _db_cls_from_aospy_cls(cls, AospyObj):
         mapping = {
             'Proj': ProjDB,
             'Model': ModelDB,
@@ -71,26 +72,28 @@ class SQLAlchemyDB(AbstractBackend):
     def query():
         raise NotImplementedError()
 
-    # Define hidden testing methods
-    def _assertNoDuplicates(self, AospyObj):
-        with self._session_scope() as session:
-            db_cls = self._db_cls_from_aospy_cls(AospyObj)
-            q = session.query(db_cls)
-            num_objs = q.filter_by(hash=hash(AospyObj)).count()
-            assert num_objs == 1
+    @classmethod
+    def _get_db_obj_query(cls, session, AospyObj):
+        db_cls = cls._db_cls_from_aospy_cls(AospyObj)
+        q = session.query(db_cls)
+        return q.filter_by(hash=hash(AospyObj))
 
-    def _assertNotInDB(self, AospyObj):
+    # Define hidden testing methods
+    def _assertNoDuplicates(self, *AospyObjs):
         with self._session_scope() as session:
-            db_cls = self._db_cls_from_aospy_cls(AospyObj)
-            q = session.query(db_cls)
-            num_objs = q.filter_by(hash=hash(AospyObj)).count()
-            assert num_objs == 0
+            for AospyObj in AospyObjs:
+                num_objs = self._get_db_obj_query(session, AospyObj).count()
+                assert num_objs == 1
+
+    def _assertNotInDB(self, *AospyObjs):
+        with self._session_scope() as session:
+            for AospyObj in AospyObjs:
+                num_objs = self._get_db_obj_query(session, AospyObj).count()
+                assert num_objs == 0
 
     def _assertDBAttrMatches(self, AospyObj, attr):
         with self._session_scope() as session:
-            db_cls = self._db_cls_from_aospy_cls(AospyObj)
-            q = session.query(db_cls)
-            db_obj = q.filter_by(hash=hash(AospyObj)).first()
+            db_obj = self._get_db_obj_query(session, AospyObj).first()
             self._checkAttrMatches(db_obj, AospyObj, attr)
 
     @staticmethod
@@ -130,7 +133,5 @@ class SQLAlchemyDB(AbstractBackend):
         attributes were all faithfully added to the DB.
         """
         with self._session_scope() as session:
-            db_cls = self._db_cls_from_aospy_cls(AospyObj)
-            q = session.query(db_cls)
-            db_obj = q.filter_by(hash=hash(AospyObj)).first()
+            db_obj = self._get_db_obj_query(session, AospyObj).first()
             self._checkAllDBAttrsMatchRecursive(db_obj, AospyObj)
