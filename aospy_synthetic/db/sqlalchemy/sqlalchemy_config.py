@@ -24,31 +24,30 @@ def _set_metadata_attrs(db_obj, AospyObj):
             )
 
 
-def _unique(session, cls, hashfunc, queryfunc, constructor, args, kwargs):
+def _unique(session, cls, queryfunc, constructor, AospyObj):
     cache = getattr(session, '_unique_cache', None)
     if cache is None:
         session._unique_cache = cache = {}
 
-    key = (cls, hashfunc(*args, **kwargs))
+    key = hash(AospyObj)
 
     # First check to see if the row was added to the session
     if key in cache:
-        _set_metadata_attrs(cache[key], *args)
+        _set_metadata_attrs(cache[key], AospyObj)
         return cache[key]
 
     # Then check if row is already in the DB
     else:
         with session.no_autoflush:
             q = session.query(cls)
-            q = queryfunc(q, *args, **kwargs)
+            q = queryfunc(q, AospyObj)
             obj = q.first()
 
             # If it is not in the DB or session cache, create a new row
             if not obj:
-                obj = constructor(session, *args, **kwargs)
-                session.add(obj)
+                obj = constructor(session, AospyObj)
             else:
-                _set_metadata_attrs(obj, *args)
+                _set_metadata_attrs(obj, AospyObj)
         cache[key] = obj
     return obj
 
@@ -68,23 +67,17 @@ class UniqueMixin(object):
     hash = Column(String)
 
     @staticmethod
-    def unique_hash(AospyObj):
-        return hash(AospyObj)
-
-    @staticmethod
     def unique_filter(query, AospyObj):
         return query.filter_by(hash=hash(AospyObj))
 
     @classmethod
-    def as_unique(cls, session, *args, **kwargs):
+    def as_unique(cls, session, AospyObj):
         return _unique(
             session,
             cls,
-            cls.unique_hash,
             cls.unique_filter,
             cls,
-            args,
-            kwargs
+            AospyObj
         )
 
     @staticmethod

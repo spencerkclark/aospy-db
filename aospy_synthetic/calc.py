@@ -54,7 +54,7 @@ class CalcInterface(object):
                  date_range=None, region=None, intvl_in=None, intvl_out=None,
                  dtype_in_time=None, dtype_in_vert=None, dtype_out_time=None,
                  dtype_out_vert=None, level=None, chunk_len=False,
-                 verbose=True, backend=None, db_on=True):
+                 verbose=True, backend=None, db_tracking=True):
         """Create the CalcInterface object with the given parameters."""
         if run not in model.runs.values():
             raise AttributeError("Model '{}' has no run '{}'.  Calc object "
@@ -130,7 +130,7 @@ class CalcInterface(object):
         self.end_date_xray = tm.apply_year_offset(self.end_date)
 
         self.backend = backend
-        self.db_on = db_on
+        self.db_tracking = db_tracking
 
 
 class Calc(object):
@@ -142,6 +142,13 @@ class Calc(object):
                          self.region.name, self._parent))
         else:
             return hash((str(type(self)), self.file_name, self._parent))
+
+    def track(self):
+        if self.region:
+            return (self.run.track() and self.var.track() and
+                    self.region.track() and self.db_tracking)
+        else:
+            return self.run.track() and self.var.track() and self.db_tracking
 
     ARR_XRAY_NAME = 'aospy_result'
 

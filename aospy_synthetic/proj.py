@@ -8,9 +8,9 @@ class Proj(object):
     """Project parameters: models, regions, directories, etc."""
     def __init__(self, name, vars={}, models={}, default_models={}, regions={},
                  direc_out='', nc_dir_struc=False, verbose=True, backend=None,
-                 db_on=True):
+                 db_tracking=True):
         self.backend = backend
-        self.db_on = db_on
+        self.db_tracking = db_tracking
         self.verbose = verbose
         if self.verbose:
             print ("Initializing Project instance: %s (%s)"
@@ -50,5 +50,8 @@ class Proj(object):
 
     def __hash__(self):
         return hash((str(type(self)), self.name))
+
+    def track(self):
+        return self.db_tracking
 
     __repr__ = __str__

@@ -21,10 +21,10 @@ class Run(object):
                  data_in_suffix=False, data_in_files={},
                  default_date_range=False, ens_mem_prefix=False,
                  ens_mem_ext=False, ens_mem_suffix=False, tags=(),
-                 idealized=False, backend=None, db_on=True):
+                 idealized=False, backend=None, db_tracking=True):
         """Instantiate a `Run` object."""
         self.backend = backend
-        self.db_on = db_on
+        self.db_tracking = db_tracking
         self.name = name
         self.description = description
         self.proj = proj
@@ -58,6 +58,9 @@ class Run(object):
 
     def __str__(self):
         return 'Run instance "%s"' % self.name
+
+    def track(self):
+        return self.model.track() and self.db_tracking
 
     __repr__ = __str__
 

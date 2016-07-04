@@ -11,7 +11,7 @@ class Var(object):
                  description='', def_time=False, def_vert=False, def_lat=False,
                  def_lon=False, in_nc_grid=False, math_str=False,
                  colormap='RdBu_r', valid_range=False,
-                 func_input_dtype='DataArray'):
+                 func_input_dtype='DataArray', db_tracking=True):
         """Create Var object."""
         self.name = name
         if alt_names:
@@ -52,12 +52,16 @@ class Var(object):
         self.math_str = math_str
         self.colormap = colormap
         self.valid_range = valid_range
+        self.db_tracking = db_tracking
 
     def __hash__(self):
         return hash((str(type(self)), self.name))
 
     def __str__(self):
         return 'Var instance "' + self.name + '"'
+
+    def track(self):
+        return self.db_tracking
 
     __repr__ = __str__
 

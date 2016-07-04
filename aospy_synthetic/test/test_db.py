@@ -165,5 +165,23 @@ class TestDeleteCascade(unittest.TestCase):
             self.assertEqual(num_objs, 1)
 
 
+class TestDBTrackingToggle(unittest.TestCase):
+    def setUp(self):
+        self.db = SQLAlchemyDB()
+        self.proj = projects.p
+        self.calc = calc_objs.c
+
+    def tearDown(self):
+        os.remove('test.db')
+
+    @unittest.expectedFailure  # Feature not implemented yet
+    def test_dont_track(self):
+        self.proj.db_tracking = False
+        self.db.add(self.proj)
+        with self.db._session_scope() as session:
+            q = session.query(ProjDB)
+            num_objs = q.filter_by(hash=hash(self.proj)).count()
+            self.assertEqual(num_objs, 0)
+
 if __name__ == '__main__':
     unittest.main()

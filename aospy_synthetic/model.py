@@ -19,10 +19,10 @@ class Model(object):
                  data_in_dur=False, data_in_start_date=False,
                  data_in_end_date=False, default_date_range=False, runs={},
                  default_runs={}, load_grid_data=False, repo_version=False,
-                 backend=None, db_on=True):
+                 backend=None, db_tracking=True):
         self.backend = backend
-        self.db_on = db_on
         self.name = name
+        self.db_tracking = db_tracking
         self.description = description
         self.proj = proj
 
@@ -65,6 +65,9 @@ class Model(object):
 
     def __hash__(self):
         return hash((str(type(self)), self.name, self._parent))
+
+    def track(self):
+        return self.proj.track() and self.db_tracking
 
     __repr__ = __str__
 
