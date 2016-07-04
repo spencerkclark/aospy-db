@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from ..abstract_db import AbstractBackend
 from sqlalchemy_config import (initialize_db,
                                ProjDB, ModelDB, RunDB,
-                               VarDB, CalcDB, RegionDB)
+                               VarDB, CalcDB, RegionDB, UnitsDB)
 
 
 class SQLAlchemyDB(AbstractBackend):
@@ -49,7 +49,8 @@ class SQLAlchemyDB(AbstractBackend):
             'Run': RunDB,
             'Calc': CalcDB,
             'Var': VarDB,
-            'Region': RegionDB
+            'Region': RegionDB,
+            'Units': UnitsDB
         }
         return mapping[AospyObj.__class__.__name__]
 

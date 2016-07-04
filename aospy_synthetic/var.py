@@ -60,6 +60,6 @@ class Var(object):
         return 'Var instance "' + self.name + '"'
 
     def track(self):
-        return self.db_tracking
+        return all([self.db_tracking, self.units.track()])
 
     __repr__ = __str__

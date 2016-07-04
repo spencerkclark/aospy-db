@@ -1,7 +1,7 @@
 """SQLAlchemy DB Setup: UniqueMixin design pattern adapted from:
 https://bitbucket.org/zzzeek/sqlalchemy/wiki/UsageRecipes/UniqueObject"""
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Float
 from sqlalchemy import create_engine, ForeignKey
 from sqlalchemy.orm import relationship
 
@@ -197,11 +197,37 @@ class RunDB(UniqueMixin, Base):
     data_in_direc = Column(String)
 
 
+class UnitsDB(UniqueMixin, Base):
+    __tablename__ = 'units'
+    _metadata_attrs = {
+        'units': 'units',
+        'plot_units': 'plot_units',
+        'plot_units_conv': 'plot_units_conv',
+        'vert_int_plot_units': 'vert_int_plot_units',
+        'vert_int_plot_units_conv': 'vert_int_plot_units_conv'
+    }
+    id = Column(Integer, primary_key=True)
+    vars = relationship('VarDB', back_populates='units', cascade='delete')
+
+    # _metadata_attrs
+    units = Column(String)
+    plot_units = Column(String)
+    plot_units_conv = Column(Float)
+    vert_int_plot_units = Column(String)
+    vert_int_plot_units_conv = Column(Float)
+
+
 class VarDB(UniqueMixin, Base):
     __tablename__ = 'vars'
     _metadata_attrs = {
         'name': 'name',
         'description': 'description',
+    }
+    _db_attrs = {
+        'units': {
+            'db_cls': UnitsDB,
+            'aospy_obj_attr': 'units'
+        }
     }
     id = Column(Integer, primary_key=True)
     calcs = relationship(
@@ -209,6 +235,10 @@ class VarDB(UniqueMixin, Base):
         back_populates='var',
         cascade='delete'
     )
+
+    # _db_attrs
+    units_id = Column(Integer, ForeignKey('units.id'))
+    units = relationship('UnitsDB', back_populates='vars')
 
     # _metadata_attrs
     name = Column(String)
