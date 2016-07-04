@@ -145,10 +145,16 @@ class Calc(object):
 
     def track(self):
         if self.region:
-            return (self.run.track() and self.var.track() and
-                    self.region.track() and self.db_tracking)
+            return all(
+                [
+                    self.run.track(),
+                    self.var.track(),
+                    self.region.track(),
+                    self.db_tracking
+                ]
+            )
         else:
-            return self.run.track() and self.var.track() and self.db_tracking
+            return all([self.run.track(), self.var.track(), self.db_tracking])
 
     ARR_XRAY_NAME = 'aospy_result'
 
@@ -225,8 +231,8 @@ class Calc(object):
         self.data_out = {}
 
         # Add rows to database.
-        if (self.backend is not None) and (self.db_on):
-            self.backend.add(self)
+#        if (self.backend is not None) and (self.db_on):
+ #           self.backend.add(self)
 
     def compute(self):
         """Perform all desired calculations on the data and save externally."""

@@ -125,18 +125,30 @@ class TestDeleteCascade(unittest.TestCase):
 class TestDBTrackingToggle(unittest.TestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
-        self.proj = projects.p
         self.calc = calc_objs.c
+        self.run = self.calc.run
+        self.model = self.run.model
+        self.proj = self.model.project
 
     def tearDown(self):
+        self.calc.db_tracking = True
+        self.run.db_tracking = True
+        self.model.db_tracking = True
+        self.proj.db_tracking = True
         os.remove('test.db')
 
-    @unittest.expectedFailure  # Feature not implemented yet
+    def test_tracking_flag(self):
+        self.assertEqual(self.proj.track(), True)
+        self.proj.db_tracking = False
+        self.assertEqual(self.proj.track(), False)
+        self.assertEqual(self.model.track(), False)
+        self.assertEqual(self.run.track(), False)
+        self.assertEqual(self.calc.track(), False)
+
     def test_dont_track(self):
         self.proj.db_tracking = False
-        self.db.add(self.proj)
+        self.assertRaises(RuntimeError, self.db.add, self.proj)
 
-        self.db._assertNotInDB(self.proj)
 
 if __name__ == '__main__':
     unittest.main()

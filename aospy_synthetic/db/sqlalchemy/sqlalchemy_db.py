@@ -56,10 +56,15 @@ class SQLAlchemyDB(AbstractBackend):
     def add(self, AospyObj):
         """Adds an aospy object to the database.
         """
-        with self._session_scope() as session:
-            db_obj = self._db_cls_from_aospy_cls(AospyObj).as_unique(session,
-                                                                     AospyObj)
-            session.add(db_obj)
+        if AospyObj.track():
+            with self._session_scope() as session:
+                db_obj = self._db_cls_from_aospy_cls(AospyObj).as_unique(
+                    session,
+                    AospyObj
+                )
+                session.add(db_obj)
+        else:
+            raise RuntimeError('aospy object not set to be tracked in DB')
 
     def delete(self, AospyObj):
         """Deletes an aospy object from the database if it exists"""

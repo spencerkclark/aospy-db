@@ -41,10 +41,6 @@ class Proj(object):
             for obj in obj_dict.values():
                 setattr(obj, 'proj', self)
 
-        # Add to DB
-#        if (self.backend is not None) and (self.db_on):
-#            self.db_obj = self.backend.add(self)
-
     def __str__(self):
         return 'Project instance "' + self.name + '"'
 

@@ -1,7 +1,6 @@
 """`Run` class; for storing attributes of a model run or obs product."""
 
 from .timedate import TimeManager
-from sqlalchemy.sql import ClauseElement
 
 
 class Run(object):
@@ -60,61 +59,6 @@ class Run(object):
         return 'Run instance "%s"' % self.name
 
     def track(self):
-        return self.model.track() and self.db_tracking
+        return all([self.model.track(), self.db_tracking])
 
     __repr__ = __str__
-
-#    def get_db_entry(self, session):
-#        db_entry, isin = get_or_create(session, dbRun, defaults=None,
-#                                       name=self.name)
-#        return db_entry
-
-#    def get_calcs(self, **kwargs):
-#        """Returns all Calc rows that match all the keyword
-#        arguments provided for this particular Run.
-
-    #     Example:
-    #     >>> rn.get_calcs(intvl_in='monthly', intvl_out='djf')
-
-    #     Parameters
-    #     ----------
-    #     **kwargs : dict
-    #         Conditions to be met by the returned Calcs
-
-    #     Returns
-    #     -------
-    #     cs : list
-    #         List of Calc rows that meet the keyword argument conditions
-    #     """
-    #     session = create_session()
-    #     rn = self.get_db_entry(session)
-    #     params = dict((k, v) for k, v in kwargs.iteritems()
-    #                   if not isinstance(v, ClauseElement))
-    #     cs = session.query(dbCalc).filter_by(run=rn, **params).all()
-    #     session.close()
-    #     return cs
-
-    # def get_vars(self, **kwargs):
-    #     """Returns all Var rows from this run for which Calcs that
-    #     meet the provided conditions exist.
-
-    #     Parameters
-    #     ----------
-    #     **kwargs : dict
-    #         Conditions that Calcs must meet
-
-    #     Returns
-    #     -------
-    #     cs : list
-    #         List of Var rows for which Calcs with the given properties
-    #         exist
-    #     """
-    #     session = create_session()
-    #     rn = self.get_db_entry(session)
-    #     params = dict((k, v) for k, v in kwargs.iteritems()
-    #                   if not isinstance(v, ClauseElement))
-    #     sub = session.query(dbCalc).filter_by(run=rn,
-    #                                           **params).subquery('sub')
-    #     cs = session.query(dbVar).filter(sub.c.var_id == dbVar.id).all()
-    #     session.close()
-    #     return cs
