@@ -6,14 +6,11 @@ import os
 from test_objs import (runs, models, projects, variables,
                        regions, calc_objs)
 from aospy_synthetic.db.sqlalchemy.sqlalchemy_db import SQLAlchemyDB
-from aospy_synthetic.db.sqlalchemy.sqlalchemy_config import (ProjDB, ModelDB,
-                                                             RunDB, VarDB,
-                                                             RegionDB, CalcDB)
 
 
 class SharedDBTests(object):
     def setUp(self):
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def tearDown(self):
         os.remove('test.db')
@@ -92,11 +89,12 @@ class TestDeleteCascade(unittest.TestCase):
         self.run = self.calc.run
         self.model = self.run.model
         self.proj = self.model.proj
+        self.var = self.calc.var
 
     def tearDown(self):
         os.remove('test.db')
 
-    def test_delete_parent(self):
+    def test_delete_proj(self):
         self.db.add(self.calc)
         self.db.delete(self.proj)
 
@@ -104,8 +102,9 @@ class TestDeleteCascade(unittest.TestCase):
         self.db._assertNotInDB(self.run)
         self.db._assertNotInDB(self.model)
         self.db._assertNotInDB(self.proj)
+        self.db._assertNoDuplicates(self.var)
 
-    def test_delete_child(self):
+    def test_delete_calc(self):
         self.db.add(self.calc)
         self.db.delete(self.calc)
 
@@ -113,6 +112,7 @@ class TestDeleteCascade(unittest.TestCase):
         self.db._assertNoDuplicates(self.run)
         self.db._assertNoDuplicates(self.model)
         self.db._assertNoDuplicates(self.proj)
+        self.db._assertNoDuplicates(self.var)
 
 
 class TestDBTrackingToggle(unittest.TestCase):
