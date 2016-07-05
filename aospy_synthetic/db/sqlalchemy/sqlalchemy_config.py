@@ -1,5 +1,3 @@
-"""SQLAlchemy DB Setup: UniqueMixin design pattern adapted from:
-https://bitbucket.org/zzzeek/sqlalchemy/wiki/UsageRecipes/UniqueObject"""
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, Float
 from sqlalchemy import create_engine, ForeignKey
@@ -9,11 +7,29 @@ Base = declarative_base()
 
 
 def initialize_db(DB_PATH):
+    """Initializes the sqlalchemy engine for a given database path. Creates a
+    new database if an existing database does not exist.
+
+    Parameters
+    ----------
+    DB_PATH : str
+        Url of the database.
+    """
     engine = create_engine(DB_PATH)
     Base.metadata.create_all(engine)
 
 
 def _set_metadata_attrs(db_obj, AospyObj):
+    """Updates the value of all specified _metadata_attrs in a database
+    object to their corresponding value in an aospy core object.
+
+    Parameters
+    ----------
+    db_obj
+        Database row object.
+    AospyObj
+        Aospy core object.
+    """
     for key in db_obj._metadata_attrs:
         if hasattr(AospyObj, db_obj._metadata_attrs[key]):
             setattr(
@@ -25,6 +41,32 @@ def _set_metadata_attrs(db_obj, AospyObj):
 
 
 def _unique(session, cls, queryfunc, constructor, AospyObj):
+    """Returns a database row object guaranteed to be unique based on
+    the hash of the given aospy core object.
+
+    First we check to see if the object has been added to the current session;
+    then we check to see if the object is already in the database.  If neither
+    of those are true, the object is added to the database.
+
+    Parameters
+    ----------
+    session : Session
+        Active sqlalchemy Session.
+    cls
+        Database object class associated with the provided aospy core object.
+    queryfunc : function
+        Function to call to return a sqlalchemy Query object associated with
+        the aospy core object.
+    constructor : function
+        Constructor of database row object.
+    AospyObj
+        Aospy core object to insert into the database.
+
+    Returns
+    -------
+    DBObj
+        Database row object.
+    """
     cache = getattr(session, '_unique_cache', None)
     if cache is None:
         session._unique_cache = cache = {}
@@ -53,6 +95,17 @@ def _unique(session, cls, queryfunc, constructor, AospyObj):
 
 
 class UniqueMixin(object):
+    """Superclass for all sqlalchemy row objects for use with aospy to
+    enforce that no duplicate entries will be saved in the database.
+
+    Uniqueness checking using this superclass requires that all aospy
+    core objects implement a hash function, which can be used to
+    distinguish between distinct aospy core objects.
+
+    This recipe was adapted from `SQLAlchemy's Bitbucket
+    Repo<https://bitbucket.org/zzzeek/sqlalchemy/wiki/
+    UsageRecipes/UniqueObject>`.
+    """
 
     # Maps a non DB object attribute name in the DB object to
     # an attribute name in the corresponding aospy object
@@ -68,10 +121,36 @@ class UniqueMixin(object):
 
     @staticmethod
     def unique_filter(query, AospyObj):
+        """Returns a database filter object for a given aospy core object.
+
+        Paramters
+        ---------
+        query : Query
+            Sqlalchemy Query object associated with a given database
+            row object.
+        AospyObj
+            Aospy core object.
+        """
         return query.filter_by(hash=hash(AospyObj))
 
     @classmethod
     def as_unique(cls, session, AospyObj):
+        """Returns a database row object associated with a given aospy core
+        object. This database row object is guaranteed to be unique in the
+        database.
+
+        Parameters
+        ----------
+        session : Session
+            Active sqlalchemy Session.
+        AospyObj
+            Aospy core object of the same class as this database row object
+
+        Returns
+        -------
+        DBObj
+            Database row object.
+        """
         return _unique(
             session,
             cls,
@@ -82,9 +161,36 @@ class UniqueMixin(object):
 
     @staticmethod
     def _get_db_obj(db_cls, session, AospyObj):
+        """Returns a database row object associated with a given aospy core
+        object. This database row object is guaranteed to be unique in the
+        database.
+
+        Parameters
+        ----------
+        db_cls
+            Database row class corresponding with the `AospyObj` class
+        session : Session
+            Active sqlalchemy Session.
+        AospyObj
+            Aospy core object of the same class as the `db_cls` object
+
+        Returns
+        -------
+        DBObj
+            Database row object.
+        """
         return db_cls.as_unique(session, AospyObj)
 
     def __init__(self, session, AospyObj):
+        """Constructs a unique database row object from an aospy core object
+
+        Parameters
+        ----------
+        session : Session
+            Active sqlalchemy Session.
+        AospyObj
+            Aospy core object.
+        """
         self.hash = hash(AospyObj)
 
         _set_metadata_attrs(self, AospyObj)
@@ -116,6 +222,15 @@ class UniqueMixin(object):
 
 
 class ProjDB(UniqueMixin, Base):
+    """Database row object corresponding with Proj
+
+    Parameters
+    ----------
+    name : str
+        Proj.name
+    direc_out : str
+        Proj.direc_out
+    """
     __tablename__ = 'projects'
     _metadata_attrs = {
         'name': 'name',
@@ -134,6 +249,7 @@ class ProjDB(UniqueMixin, Base):
 
 
 class ModelDB(UniqueMixin, Base):
+    """Database row object corresponding with Model"""
     __tablename__ = 'models'
     _metadata_attrs = {
         'name': 'name',
@@ -162,6 +278,7 @@ class ModelDB(UniqueMixin, Base):
 
 
 class RunDB(UniqueMixin, Base):
+    """Database row object corresponding with Run"""
     __tablename__ = 'runs'
     _metadata_attrs = {
         'name': 'name',
@@ -198,6 +315,7 @@ class RunDB(UniqueMixin, Base):
 
 
 class UnitsDB(UniqueMixin, Base):
+    """Database row object corresponding with Units"""
     __tablename__ = 'units'
     _metadata_attrs = {
         'units': 'units',
@@ -218,6 +336,7 @@ class UnitsDB(UniqueMixin, Base):
 
 
 class VarDB(UniqueMixin, Base):
+    """Database row object corresponding with Var"""
     __tablename__ = 'vars'
     _metadata_attrs = {
         'name': 'name',
@@ -244,11 +363,9 @@ class VarDB(UniqueMixin, Base):
     name = Column(String)
     description = Column(String)
 
-    # TODO properly handle aospy Units objects (they should probably be another
-    # table)
-
 
 class RegionDB(UniqueMixin, Base):
+    """Database row object corresponding with Region"""
     __tablename__ = 'regions'
     _metadata_attrs = {
         'name': 'name',
@@ -267,6 +384,7 @@ class RegionDB(UniqueMixin, Base):
 
 
 class CalcDB(UniqueMixin, Base):
+    """Database row object corresponding with Calc"""
     __tablename__ = 'calcs'
     _metadata_attrs = {
         'intvl_in': 'intvl_in',
