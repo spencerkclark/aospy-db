@@ -256,6 +256,22 @@ class SQLAlchemyDB(AbstractBackend):
 
     @classmethod
     def _checkAllDBAttrsMatchRecursive(cls, db_obj, AospyObj):
+        """Recursively traverse the object tree and test if database object
+        attributes match the corresponding aospy core object attributes.
+
+        Parameters
+        ----------
+        db_obj
+            Database row object.
+        AospyObj
+            Aospy core object.
+
+        Raises
+        ------
+        AssertionError
+            If there is a mismatch between any database attributes and
+            corresponding aospy core object attributes.
+        """
         cls._checkAllMetadataAttrsMatch(db_obj, AospyObj)
         for attr in db_obj._db_attrs:
             parent_db_obj = getattr(db_obj, attr)
