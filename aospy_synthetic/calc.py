@@ -38,8 +38,6 @@ class CalcInterface(object):
         self.model = model
         self.run = run
 
-        self._parent = run
-
         self._set_data_in_attrs()
 
         self.proj_str = str(proj)
@@ -97,9 +95,9 @@ class Calc(object):
     def __hash__(self):
         if self.region:
             return hash((str(type(self)), self.file_name,
-                         self.region.name, self._parent))
+                         self.region.name, self.run))
         else:
-            return hash((str(type(self)), self.file_name, self._parent))
+            return hash((str(type(self)), self.file_name, self.run))
 
     def track(self):
         if self.region:

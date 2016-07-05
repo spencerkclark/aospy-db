@@ -28,12 +28,9 @@ class Model(object):
 
         self.runs = dict_name_keys(runs)
 
-        self.project = None
-        self._parent = None
         if runs:
             for run in runs:
                 run.model = self
-                run._parent = self
 
         if default_runs:
             self.default_runs = dict_name_keys(default_runs)
@@ -46,7 +43,7 @@ class Model(object):
         return 'Model instance "' + self.name + '"'
 
     def __hash__(self):
-        return hash((str(type(self)), self.name, self._parent))
+        return hash((str(type(self)), self.name, self.proj))
 
     def track(self):
         return all([self.proj.track(), self.db_tracking])

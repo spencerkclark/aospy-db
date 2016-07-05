@@ -22,8 +22,7 @@ class Proj(object):
         if models:
             self.models = dict_name_keys(models)
             for model in models:
-                model.project = self
-                model._parent = self
+                model.proj = self
         else:
             self.models = {}
         if default_models == 'all':

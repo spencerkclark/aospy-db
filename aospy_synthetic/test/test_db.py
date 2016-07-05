@@ -148,7 +148,7 @@ class TestDBTrackingToggle(unittest.TestCase):
         self.var = self.calc.var
         self.run = self.calc.run
         self.model = self.run.model
-        self.proj = self.model.project
+        self.proj = self.model.proj
         self.units = self.var.units
 
     def tearDown(self):

@@ -54,7 +54,7 @@ class Var(object):
         self.db_tracking = db_tracking
 
     def __hash__(self):
-        return hash((str(type(self)), self.name))
+        return hash((str(type(self)), self.name, self.units))
 
     def __str__(self):
         return 'Var instance "' + self.name + '"'

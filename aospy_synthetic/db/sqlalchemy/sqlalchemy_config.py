@@ -142,7 +142,7 @@ class ModelDB(UniqueMixin, Base):
     _db_attrs = {
         'project': {
             'db_cls': ProjDB,
-            'aospy_obj_attr': 'project'
+            'aospy_obj_attr': 'proj'
         }
     }
 
