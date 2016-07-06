@@ -93,11 +93,12 @@ class Calc(object):
     """Class for executing, saving, and loading a single computation."""
 
     def __hash__(self):
+        self.file_name = self._file_name(self.dtype_out_time)
         if self.region:
             return hash((str(type(self)), self.file_name,
-                         self.region.name, self.run))
+                         self.region.name, self.run, self.var))
         else:
-            return hash((str(type(self)), self.file_name, self.run))
+            return hash((str(type(self)), self.file_name, self.run, self.var))
 
     def track(self):
         if self.region:
