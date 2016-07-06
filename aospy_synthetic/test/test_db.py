@@ -153,47 +153,88 @@ class TestDeleteCascade(unittest.TestCase):
         )
 
 
-class TestDBTrackingToggle(unittest.TestCase):
+class SharedDBTrackingTests(object):
+    ancestors = []
+    aospy_cls = ''
+
+    def _assertProperTrackingFlag(self, test_cls):
+        self.assertEqual(self.objects[test_cls].db_tracking, True)
+        self.objects[test_cls].db_tracking = False
+
+        aospy_obj = self.objects[self.aospy_cls]
+        if test_cls in self.ancestors:
+            self.assertEqual(aospy_obj.track(), False)
+        else:
+            self.assertEqual(aospy_obj.track(), True)
+
     def setUp(self):
         self.db = SQLAlchemyDB()
-        self.calc = calc_objs.c
-        self.var = self.calc.var
-        self.run = self.calc.run
-        self.model = self.run.model
-        self.proj = self.model.proj
-        self.units = self.var.units
+        self.objects = {
+            'Calc': calc_objs.c,
+            'Run': calc_objs.c.run,
+            'Model': calc_objs.c.run.model,
+            'Proj': calc_objs.c.run.model.proj,
+            'Var': calc_objs.c.var,
+            'Units': calc_objs.c.var.units,
+            'Region': calc_objs.c.region
+        }
 
     def tearDown(self):
-        self.calc.db_tracking = True
-        self.run.db_tracking = True
-        self.model.db_tracking = True
-        self.proj.db_tracking = True
-        self.var.db_tracking = True
-        self.units.db_tracking = True
+        for aospy_cls, aospy_obj in self.objects.iteritems():
+            aospy_obj.db_tracking = True
         os.remove('test.db')
 
-    def test_tracking_flag_proj(self):
-        self.assertEqual(self.proj.track(), True)
-        self.proj.db_tracking = False
-        self.assertEqual(self.proj.track(), False)
-        self.assertEqual(self.model.track(), False)
-        self.assertEqual(self.run.track(), False)
-        self.assertEqual(self.calc.track(), False)
-        self.assertEqual(self.units.track(), True)
+    def test_tracking_set_proj_false(self):
+        test_cls = 'Proj'
+        self._assertProperTrackingFlag(test_cls)
 
-    def test_tracking_flag_units(self):
-        self.assertEqual(self.units.track(), True)
-        self.units.db_tracking = False
-        self.assertEqual(self.units.track(), False)
-        self.assertEqual(self.proj.track(), True)
-        self.assertEqual(self.model.track(), True)
-        self.assertEqual(self.run.track(), True)
-        self.assertEqual(self.calc.track(), False)
-        self.assertEqual(self.var.track(), False)
+    def test_tracking_set_model_false(self):
+        test_cls = 'Model'
+        self._assertProperTrackingFlag(test_cls)
+
+    def test_tracking_set_run_false(self):
+        test_cls = 'Run'
+        self._assertProperTrackingFlag(test_cls)
 
     def test_dont_track(self):
-        self.proj.db_tracking = False
-        self.assertRaises(RuntimeError, self.db.add, self.proj)
+        aospy_obj = self.objects[self.aospy_cls]
+        aospy_obj.db_tracking = False
+        self.assertRaises(RuntimeError, self.db.add, aospy_obj)
+
+
+class TestProjHash(SharedDBTrackingTests, unittest.TestCase):
+    ancestors = ['Proj']
+    aospy_cls = 'Proj'
+
+
+class TestModelHash(SharedDBTrackingTests, unittest.TestCase):
+    ancestors = ['Proj', 'Model']
+    aospy_cls = 'Model'
+
+
+class TestRunHash(SharedDBTrackingTests, unittest.TestCase):
+    ancestors = ['Proj', 'Model', 'Run']
+    aospy_cls = 'Run'
+
+
+class TestCalcHash(SharedDBTrackingTests, unittest.TestCase):
+    ancestors = ['Proj', 'Model', 'Run', 'Calc', 'Var', 'Units', 'Region']
+    aospy_cls = 'Calc'
+
+
+class TestVarHash(SharedDBTrackingTests, unittest.TestCase):
+    ancestors = ['Var', 'Units']
+    aospy_cls = 'Var'
+
+
+class TestUnitsHash(SharedDBTrackingTests, unittest.TestCase):
+    ancestors = ['Units']
+    aospy_cls = 'Units'
+
+
+class TestRegionHash(SharedDBTrackingTests, unittest.TestCase):
+    ancestors = ['Region']
+    aospy_cls = 'Region'
 
 
 if __name__ == '__main__':

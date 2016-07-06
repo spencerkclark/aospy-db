@@ -8,7 +8,6 @@ from test_objs import calc_objs
 
 class SharedHashTests(object):
     ancestors = []
-    descendents = []
     aospy_cls = ''
 
     def _assertHashUniqueness(self, test_cls):
@@ -82,19 +81,16 @@ class SharedHashTests(object):
 
 class TestProjHash(SharedHashTests, unittest.TestCase):
     ancestors = ['Proj']
-    descendents = ['Model', 'Run', 'Calc']
     aospy_cls = 'Proj'
 
 
 class TestModelHash(SharedHashTests, unittest.TestCase):
     ancestors = ['Proj', 'Model']
-    descendents = ['Run', 'Calc']
     aospy_cls = 'Model'
 
 
 class TestRunHash(SharedHashTests, unittest.TestCase):
     ancestors = ['Proj', 'Model', 'Run']
-    descendents = ['Calc']
     aospy_cls = 'Run'
 
 
@@ -105,19 +101,16 @@ class TestCalcHash(SharedHashTests, unittest.TestCase):
 
 class TestVarHash(SharedHashTests, unittest.TestCase):
     ancestors = ['Var', 'Units']
-    descendents = ['Calc']
     aospy_cls = 'Var'
 
 
 class TestUnitsHash(SharedHashTests, unittest.TestCase):
     ancestors = ['Units']
-    descendents = ['Var', 'Calc']
     aospy_cls = 'Units'
 
 
 class TestRegionHash(SharedHashTests, unittest.TestCase):
     ancestors = ['Region']
-    descendents = ['Calc']
     aospy_cls = 'Region'
 
 
