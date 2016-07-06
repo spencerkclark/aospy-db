@@ -3,8 +3,10 @@
 import unittest
 import os
 
-from test_objs import (runs, models, projects, variables,
-                       regions, calc_objs, units)
+from test_objs import (
+    runs, models, projects, variables, regions, calc_objs, units
+)
+import heirarchical_test_objs as hto
 from aospy_synthetic.db.sqlalchemy.sqlalchemy_db import SQLAlchemyDB
 
 
@@ -153,7 +155,7 @@ class TestDeleteCascade(unittest.TestCase):
         )
 
 
-class SharedDBTrackingTests(object):
+class SharedDBTrackTests(object):
     ancestors = []
     aospy_cls = ''
 
@@ -202,39 +204,32 @@ class SharedDBTrackingTests(object):
         self.assertRaises(RuntimeError, self.db.add, aospy_obj)
 
 
-class TestProjHash(SharedDBTrackingTests, unittest.TestCase):
-    ancestors = ['Proj']
-    aospy_cls = 'Proj'
+class TestProjTrack(hto.TestProj, SharedDBTrackTests, unittest.TestCase):
+    pass
 
 
-class TestModelHash(SharedDBTrackingTests, unittest.TestCase):
-    ancestors = ['Proj', 'Model']
-    aospy_cls = 'Model'
+class TestModelTrack(hto.TestModel, SharedDBTrackTests, unittest.TestCase):
+    pass
 
 
-class TestRunHash(SharedDBTrackingTests, unittest.TestCase):
-    ancestors = ['Proj', 'Model', 'Run']
-    aospy_cls = 'Run'
+class TestRunTrack(hto.TestRun, SharedDBTrackTests, unittest.TestCase):
+    pass
 
 
-class TestCalcHash(SharedDBTrackingTests, unittest.TestCase):
-    ancestors = ['Proj', 'Model', 'Run', 'Calc', 'Var', 'Units', 'Region']
-    aospy_cls = 'Calc'
+class TestCalcTrack(hto.TestCalc, SharedDBTrackTests, unittest.TestCase):
+    pass
 
 
-class TestVarHash(SharedDBTrackingTests, unittest.TestCase):
-    ancestors = ['Var', 'Units']
-    aospy_cls = 'Var'
+class TestVarTrack(hto.TestVar, SharedDBTrackTests, unittest.TestCase):
+    pass
 
 
-class TestUnitsHash(SharedDBTrackingTests, unittest.TestCase):
-    ancestors = ['Units']
-    aospy_cls = 'Units'
+class TestUnitsTrack(hto.TestUnits, SharedDBTrackTests, unittest.TestCase):
+    pass
 
 
-class TestRegionHash(SharedDBTrackingTests, unittest.TestCase):
-    ancestors = ['Region']
-    aospy_cls = 'Region'
+class TestRegionTrack(hto.TestRegion, SharedDBTrackTests, unittest.TestCase):
+    pass
 
 
 if __name__ == '__main__':

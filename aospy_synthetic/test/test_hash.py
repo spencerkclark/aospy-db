@@ -4,6 +4,7 @@ import unittest
 from copy import deepcopy
 
 from test_objs import calc_objs
+import heirarchical_test_objs as hto
 
 
 class SharedHashTests(object):
@@ -79,39 +80,32 @@ class SharedHashTests(object):
         self._assertHashUniqueness(test_cls)
 
 
-class TestProjHash(SharedHashTests, unittest.TestCase):
-    ancestors = ['Proj']
-    aospy_cls = 'Proj'
+class TestProjHash(hto.TestProj, SharedHashTests, unittest.TestCase):
+    pass
 
 
-class TestModelHash(SharedHashTests, unittest.TestCase):
-    ancestors = ['Proj', 'Model']
-    aospy_cls = 'Model'
+class TestModelHash(hto.TestModel, SharedHashTests, unittest.TestCase):
+    pass
 
 
-class TestRunHash(SharedHashTests, unittest.TestCase):
-    ancestors = ['Proj', 'Model', 'Run']
-    aospy_cls = 'Run'
+class TestRunHash(hto.TestRun, SharedHashTests, unittest.TestCase):
+    pass
 
 
-class TestCalcHash(SharedHashTests, unittest.TestCase):
-    ancestors = ['Proj', 'Model', 'Run', 'Calc', 'Var', 'Units', 'Region']
-    aospy_cls = 'Calc'
+class TestCalcHash(hto.TestCalc, SharedHashTests, unittest.TestCase):
+    pass
 
 
-class TestVarHash(SharedHashTests, unittest.TestCase):
-    ancestors = ['Var', 'Units']
-    aospy_cls = 'Var'
+class TestVarHash(hto.TestVar, SharedHashTests, unittest.TestCase):
+    pass
 
 
-class TestUnitsHash(SharedHashTests, unittest.TestCase):
-    ancestors = ['Units']
-    aospy_cls = 'Units'
+class TestUnitsHash(hto.TestUnits, SharedHashTests, unittest.TestCase):
+    pass
 
 
-class TestRegionHash(SharedHashTests, unittest.TestCase):
-    ancestors = ['Region']
-    aospy_cls = 'Region'
+class TestRegionHash(hto.TestRegion, SharedHashTests, unittest.TestCase):
+    pass
 
 
 if __name__ == '__main__':
