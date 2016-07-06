@@ -21,4 +21,7 @@ class Region(object):
     def __str__(self):
         return 'Geographical region "' + self.name + '"'
 
+    def __hash__(self):
+        return hash(self.name)
+
     __repr__ = __str__

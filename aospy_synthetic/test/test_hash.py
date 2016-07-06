@@ -26,7 +26,8 @@ class SharedHashTests(object):
             'Model': calc_objs.c.run.model,
             'Proj': calc_objs.c.run.model.proj,
             'Var': calc_objs.c.var,
-            'Units': calc_objs.c.var.units
+            'Units': calc_objs.c.var.units,
+            'Region': calc_objs.c.region
         }
 
         copy = deepcopy(calc_objs.c)
@@ -36,7 +37,8 @@ class SharedHashTests(object):
             'Model': copy.run.model,
             'Proj': copy.run.model.proj,
             'Var': copy.var,
-            'Units': copy.var.units
+            'Units': copy.var.units,
+            'Region': copy.region
         }
 
     def tearDown(self):
@@ -72,6 +74,11 @@ class SharedHashTests(object):
         self.copies[test_cls].units = 'changed'
         self._assertHashUniqueness(test_cls)
 
+    def test_change_region(self):
+        test_cls = 'Region'
+        self.copies[test_cls].name = 'changed'
+        self._assertHashUniqueness(test_cls)
+
 
 class TestProjHash(SharedHashTests, unittest.TestCase):
     ancestors = ['Proj']
@@ -92,8 +99,7 @@ class TestRunHash(SharedHashTests, unittest.TestCase):
 
 
 class TestCalcHash(SharedHashTests, unittest.TestCase):
-    ancestors = ['Proj', 'Model', 'Run', 'Calc', 'Var', 'Units']
-    descendents = []
+    ancestors = ['Proj', 'Model', 'Run', 'Calc', 'Var', 'Units', 'Region']
     aospy_cls = 'Calc'
 
 
@@ -107,6 +113,12 @@ class TestUnitsHash(SharedHashTests, unittest.TestCase):
     ancestors = ['Units']
     descendents = ['Var', 'Calc']
     aospy_cls = 'Units'
+
+
+class TestRegionHash(SharedHashTests, unittest.TestCase):
+    ancestors = ['Region']
+    descendents = ['Calc']
+    aospy_cls = 'Region'
 
 
 if __name__ == '__main__':
