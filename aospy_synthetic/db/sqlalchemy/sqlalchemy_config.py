@@ -222,15 +222,7 @@ class UniqueMixin(object):
 
 
 class ProjDB(UniqueMixin, Base):
-    """Database row object corresponding with Proj
-
-    Parameters
-    ----------
-    name : str
-        Proj.name
-    direc_out : str
-        Proj.direc_out
-    """
+    """Database row object corresponding with Proj"""
     __tablename__ = 'projects'
     _metadata_attrs = {
         'name': 'name',
