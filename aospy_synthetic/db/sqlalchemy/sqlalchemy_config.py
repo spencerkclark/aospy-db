@@ -117,7 +117,7 @@ class UniqueMixin(object):
     # points to and maps 'aospy_obj_attr' to the attribute name in the
     # aospy object associated with the DB object
     _db_attrs = {}
-    hash = Column(String)
+    hashcode = Column(String)
 
     @staticmethod
     def unique_filter(query, AospyObj):
@@ -131,7 +131,7 @@ class UniqueMixin(object):
         AospyObj
             Aospy core object.
         """
-        return query.filter_by(hash=hash(AospyObj))
+        return query.filter_by(hashcode=hash(AospyObj))
 
     @classmethod
     def as_unique(cls, session, AospyObj):
@@ -191,7 +191,7 @@ class UniqueMixin(object):
         AospyObj
             Aospy core object.
         """
-        self.hash = hash(AospyObj)
+        self.hashcode = hash(AospyObj)
 
         _set_metadata_attrs(self, AospyObj)
 

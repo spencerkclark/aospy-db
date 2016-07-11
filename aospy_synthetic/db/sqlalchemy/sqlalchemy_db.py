@@ -50,7 +50,7 @@ class SQLAlchemyDB(AbstractBackend):
             db = SQLAlchemyDB()
             with db._session_scope() as session:
                 q = session.query(ProjDB)
-                db_obj = q.filter_by(hash=hash(projects.p)).first()
+                db_obj = q.filter_by(hashcode=hash(projects.p)).first()
         """
         session = self.Session()
         try:
@@ -122,7 +122,7 @@ class SQLAlchemyDB(AbstractBackend):
         """
         with self._session_scope() as session:
             q = session.query(self._db_cls_from_aospy_cls(AospyObj))
-            db_obj = q.filter_by(hash=hash(AospyObj)).first()
+            db_obj = q.filter_by(hashcode=hash(AospyObj)).first()
             if db_obj:
                 session.delete(db_obj)
 
@@ -147,7 +147,7 @@ class SQLAlchemyDB(AbstractBackend):
         """
         db_cls = cls._db_cls_from_aospy_cls(AospyObj)
         q = session.query(db_cls)
-        return q.filter_by(hash=hash(AospyObj))
+        return q.filter_by(hashcode=hash(AospyObj))
 
     # Define hidden testing methods
     def _assertNoDuplicates(self, *AospyObjs):
