@@ -8,9 +8,9 @@ class Proj(object):
     """Project parameters: models, regions, directories, etc."""
     def __init__(self, name, vars={}, models={}, default_models={}, regions={},
                  direc_out='', nc_dir_struc=False, verbose=True, backend=None,
-                 db_on=True):
+                 db_tracking=True):
         self.backend = backend
-        self.db_on = db_on
+        self.db_tracking = db_tracking
         self.verbose = verbose
         if self.verbose:
             print ("Initializing Project instance: %s (%s)"
@@ -21,6 +21,8 @@ class Proj(object):
 
         if models:
             self.models = dict_name_keys(models)
+            for model in models:
+                model.proj = self
         else:
             self.models = {}
         if default_models == 'all':
@@ -38,11 +40,16 @@ class Proj(object):
             for obj in obj_dict.values():
                 setattr(obj, 'proj', self)
 
-        # Add to DB
-        if (self.backend is not None) and (self.db_on):
-            self.db_obj = self.backend.add(self)
-
     def __str__(self):
         return 'Project instance "' + self.name + '"'
+
+    def __hash__(self):
+        return hash((str(type(self)), self.name))
+
+    def track(self):
+        """Returns True if this object and all of its parent objects
+        have db_tracking set to True.
+        """
+        return self.db_tracking
 
     __repr__ = __str__

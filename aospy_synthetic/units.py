@@ -6,7 +6,7 @@ class Units(object):
 
     def __init__(self, units='', plot_units=False, plot_units_conv=1.,
                  vert_int_units=False, vert_int_plot_units=False,
-                 vert_int_plot_units_conv=False):
+                 vert_int_plot_units_conv=False, db_tracking=True):
         """String representation of physical units and conversion methods."""
         self.units = units
         if plot_units:
@@ -28,3 +28,13 @@ class Units(object):
             self.vert_int_plot_units_conv = vert_int_plot_units_conv
         else:
             self.vert_int_plot_units_conv = plot_units_conv
+        self.db_tracking = db_tracking
+
+    def track(self):
+        """Returns True if this object and all of its parent objects
+        have db_tracking set to True.
+        """
+        return self.db_tracking
+
+    def __hash__(self):
+        return hash((str(type(self)), self.units))
