@@ -1,10 +1,12 @@
 """Test suite for the aospy_synthetic hash functions."""
 
 import unittest
+import sys
 from copy import deepcopy
 
 from test_objs import calc_objs
-import heirarchical_test_objs as hto
+import hierarchical_test_objs as hto
+from . import AospyTestCase
 
 
 class SharedHashTests(object):
@@ -80,33 +82,33 @@ class SharedHashTests(object):
         self._assertHashUniqueness(test_cls)
 
 
-class TestProjHash(hto.TestProj, SharedHashTests, unittest.TestCase):
+class TestProjHash(hto.TestProj, SharedHashTests, AospyTestCase):
     pass
 
 
-class TestModelHash(hto.TestModel, SharedHashTests, unittest.TestCase):
+class TestModelHash(hto.TestModel, SharedHashTests, AospyTestCase):
     pass
 
 
-class TestRunHash(hto.TestRun, SharedHashTests, unittest.TestCase):
+class TestRunHash(hto.TestRun, SharedHashTests, AospyTestCase):
     pass
 
 
-class TestCalcHash(hto.TestCalc, SharedHashTests, unittest.TestCase):
+class TestCalcHash(hto.TestCalc, SharedHashTests, AospyTestCase):
     pass
 
 
-class TestVarHash(hto.TestVar, SharedHashTests, unittest.TestCase):
+class TestVarHash(hto.TestVar, SharedHashTests, AospyTestCase):
     pass
 
 
-class TestUnitsHash(hto.TestUnits, SharedHashTests, unittest.TestCase):
+class TestUnitsHash(hto.TestUnits, SharedHashTests, AospyTestCase):
     pass
 
 
-class TestRegionHash(hto.TestRegion, SharedHashTests, unittest.TestCase):
+class TestRegionHash(hto.TestRegion, SharedHashTests, AospyTestCase):
     pass
 
 
 if __name__ == '__main__':
-    unittest.main()
+    sys.exit(unittest.main())

@@ -1,9 +1,9 @@
-import projects
-import models
-import runs
-import variables
-import regions
 from aospy_synthetic.calc import CalcInterface, Calc
+from . import projects
+from . import models
+from . import runs
+from . import variables
+from . import regions
 
 c = Calc(
     CalcInterface(proj=projects.p,

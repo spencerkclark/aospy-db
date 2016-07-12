@@ -1,5 +1,5 @@
 from aospy_synthetic.proj import Proj
-import models
+from . import models
 
 p = Proj(
     name='a',

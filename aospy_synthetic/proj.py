@@ -47,6 +47,9 @@ class Proj(object):
         return hash((str(type(self)), self.name))
 
     def track(self):
+        """Returns True if this object and all of its parent objects
+        have db_tracking set to True.
+        """
         return self.db_tracking
 
     __repr__ = __str__

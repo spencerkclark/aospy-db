@@ -46,6 +46,9 @@ class Model(object):
         return hash((str(type(self)), self.name, self.proj))
 
     def track(self):
+        """Returns True if this object and all of its parent objects
+        have db_tracking set to True.
+        """
         return all([self.proj.track(), self.db_tracking])
 
     __repr__ = __str__

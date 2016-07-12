@@ -1,13 +1,15 @@
 """Test suite for the aospy_synthetic db features."""
-
 import unittest
 import os
+import sys
 
 from test_objs import (
     runs, models, projects, variables, regions, calc_objs, units
 )
-import heirarchical_test_objs as hto
+import hierarchical_test_objs as hto
 from aospy_synthetic.db.sqlalchemy.sqlalchemy_db import SQLAlchemyDB
+
+from . import AospyTestCase
 
 
 class SharedDBTests(object):
@@ -42,56 +44,56 @@ class SharedDBTests(object):
         self.db._assertNotInDB(self.AospyObj)
 
 
-class TestProjDB(SharedDBTests, unittest.TestCase):
+class TestProjDB(SharedDBTests, AospyTestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
         self.AospyObj = projects.p
         self.ex_str_attr = 'direc_out'
 
 
-class TestModelDB(SharedDBTests, unittest.TestCase):
+class TestModelDB(SharedDBTests, AospyTestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
         self.AospyObj = models.m
         self.ex_str_attr = 'description'
 
 
-class TestRunDB(SharedDBTests, unittest.TestCase):
+class TestRunDB(SharedDBTests, AospyTestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
         self.AospyObj = runs.r
         self.ex_str_attr = 'description'
 
 
-class TestVarDB(SharedDBTests, unittest.TestCase):
+class TestVarDB(SharedDBTests, AospyTestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
         self.AospyObj = variables.mse
         self.ex_str_attr = 'description'
 
 
-class TestRegionDB(SharedDBTests, unittest.TestCase):
+class TestRegionDB(SharedDBTests, AospyTestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
         self.AospyObj = regions.nh
         self.ex_str_attr = 'description'
 
 
-class TestCalcDB(SharedDBTests, unittest.TestCase):
+class TestCalcDB(SharedDBTests, AospyTestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
         self.AospyObj = calc_objs.c
         self.ex_str_attr = 'dtype_out_time'
 
 
-class TestUnitsDB(SharedDBTests, unittest.TestCase):
+class TestUnitsDB(SharedDBTests, AospyTestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
         self.AospyObj = units.J_kg1
         self.ex_str_attr = 'plot_units'
 
 
-class TestDeleteCascade(unittest.TestCase):
+class TestDeleteCascade(AospyTestCase):
     def setUp(self):
         self.db = SQLAlchemyDB()
         self.calc = calc_objs.c
@@ -204,33 +206,33 @@ class SharedDBTrackTests(object):
         self.assertRaises(RuntimeError, self.db.add, aospy_obj)
 
 
-class TestProjTrack(hto.TestProj, SharedDBTrackTests, unittest.TestCase):
+class TestProjTrack(hto.TestProj, SharedDBTrackTests, AospyTestCase):
     pass
 
 
-class TestModelTrack(hto.TestModel, SharedDBTrackTests, unittest.TestCase):
+class TestModelTrack(hto.TestModel, SharedDBTrackTests, AospyTestCase):
     pass
 
 
-class TestRunTrack(hto.TestRun, SharedDBTrackTests, unittest.TestCase):
+class TestRunTrack(hto.TestRun, SharedDBTrackTests, AospyTestCase):
     pass
 
 
-class TestCalcTrack(hto.TestCalc, SharedDBTrackTests, unittest.TestCase):
+class TestCalcTrack(hto.TestCalc, SharedDBTrackTests, AospyTestCase):
     pass
 
 
-class TestVarTrack(hto.TestVar, SharedDBTrackTests, unittest.TestCase):
+class TestVarTrack(hto.TestVar, SharedDBTrackTests, AospyTestCase):
     pass
 
 
-class TestUnitsTrack(hto.TestUnits, SharedDBTrackTests, unittest.TestCase):
+class TestUnitsTrack(hto.TestUnits, SharedDBTrackTests, AospyTestCase):
     pass
 
 
-class TestRegionTrack(hto.TestRegion, SharedDBTrackTests, unittest.TestCase):
+class TestRegionTrack(hto.TestRegion, SharedDBTrackTests, AospyTestCase):
     pass
 
 
 if __name__ == '__main__':
-    unittest.main()
+    sys.exit(unittest.main())

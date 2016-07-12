@@ -101,6 +101,9 @@ class Calc(object):
             return hash((str(type(self)), self.file_name, self.run, self.var))
 
     def track(self):
+        """Returns True if this object and all of its parent objects
+        have db_tracking set to True.
+        """
         if self.region:
             return all(
                 [

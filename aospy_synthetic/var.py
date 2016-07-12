@@ -60,6 +60,9 @@ class Var(object):
         return 'Var instance "' + self.name + '"'
 
     def track(self):
+        """Returns True if this object and all of its parent objects
+        have db_tracking set to True.
+        """
         return all([self.db_tracking, self.units.track()])
 
     __repr__ = __str__

@@ -31,6 +31,9 @@ class Units(object):
         self.db_tracking = db_tracking
 
     def track(self):
+        """Returns True if this object and all of its parent objects
+        have db_tracking set to True.
+        """
         return self.db_tracking
 
     def __hash__(self):

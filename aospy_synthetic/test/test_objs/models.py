@@ -1,5 +1,5 @@
 from aospy_synthetic.model import Model
-import runs
+from . import runs
 
 m = Model(
     name='a',

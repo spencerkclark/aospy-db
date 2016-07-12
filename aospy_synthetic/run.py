@@ -58,6 +58,9 @@ class Run(object):
         return 'Run instance "%s"' % self.name
 
     def track(self):
+        """Returns True if this object and all of its parent objects
+        have db_tracking set to True.
+        """
         return all([self.model.track(), self.db_tracking])
 
     __repr__ = __str__

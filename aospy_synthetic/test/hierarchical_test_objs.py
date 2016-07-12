@@ -1,3 +1,8 @@
+"""A module of shared objects that each contain metadata regarding
+the hierarchical structure of aospy core and database objects.
+"""
+
+
 class TestProj(object):
     ancestors = ['Proj']
     aospy_cls = 'Proj'
