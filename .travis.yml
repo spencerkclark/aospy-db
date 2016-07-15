@@ -6,4 +6,4 @@ install:
   - "pip install coverage"
   - "pip install coveralls"
 script:
-  - "nosetests"
+  - "py.test aospy-db  --cov=aospy-db --cov-report term-missing"
