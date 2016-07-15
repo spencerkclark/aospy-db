@@ -6,4 +6,4 @@ install:
   - "pip install coverage"
   - "pip install coveralls"
 script:
-  - "coverage run --source=sandman setup.py test"
+  - "nosetests"
