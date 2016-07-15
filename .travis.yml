@@ -10,3 +10,4 @@ script:
   - "py.test aospy_synthetic  --cov=aospy_synthetic --cov-report term-missing"
 after_success:
   - coveralls
+  
