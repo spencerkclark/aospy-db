@@ -1,0 +1,12 @@
+name: test_env
+dependencies:
+  - python=2.7
+  - xarray
+  - pytest
+  - future
+  - sqlalchemy
+  - pip:
+    - coveralls
+    - pytest-cov
+    - pytest-pep8
+    - coverage
