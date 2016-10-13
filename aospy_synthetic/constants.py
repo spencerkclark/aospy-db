@@ -2,6 +2,8 @@
 from __future__ import division
 import numpy as np
 
+from infinite_diff import CenDiff
+
 
 class Constant(object):
     """Physical constants used in atmospheric and oceanic sciences."""
